@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { memo, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
@@ -156,7 +157,7 @@ export default function AdSpolisherHero() {
             <span className="nav-progress-track" aria-hidden="true"><i style={{ width: `${scrollProgress * 100}%` }} /></span>
           </nav>
           <div className="stage-nav-actions">
-            <a className="sign-in-button" href="#signin">Sign In</a>
+            <Link className="sign-in-button" href="/auth?mode=signin">Sign In</Link>
             <a className="quote-button" href="#quote">Get a Quote</a>
           </div>
         </header>

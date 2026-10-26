@@ -34,9 +34,15 @@ userRouter.post("/signup", async (req, res) => {
             data: {
                 name: data.name,
                 email: data.email,
-                password: hashedPassword
-            }
-        })
+                accounts: {
+                    create: {
+                        providerId: "credential",
+                        accountId: data.email,
+                        password: hashedPassword,
+                    },
+                },
+            },
+        });
 
         assignToken(res, user.id, user.email, process.env.USER_SECRET!);
 
@@ -68,15 +74,29 @@ userRouter.post("/signin", async (req, res) => {
         const findUser = await prismaClient.user.findUnique({
             where: {
                 email: data.email,
-            }
-        })
+            },
+            include: {
+                accounts: {
+                    where: {
+                        providerId: "credential",
+                    },
+                },
+            },
+        });
         if(!findUser) {
             return res.status(400).json({
                 message: "User doesn't exits"
             })
         }
 
-        const isValid = await bcrypt.compare(data.password, findUser.password);
+        const credentialAccount = findUser.accounts[0];
+        if(!credentialAccount || !credentialAccount.password) {
+            return res.status(401).json({
+                message: "Invalid password"
+            })
+        }
+
+        const isValid = await bcrypt.compare(data.password, credentialAccount.password);
         if(!isValid) {
             return res.status(401).json({
                 message: "Invalid password"

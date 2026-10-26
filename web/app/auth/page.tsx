@@ -1,7 +1,10 @@
+import { Suspense } from "react";
 import { LoginPage } from "@/components/auth/Auth";
 
-export default function Demo() {
+export default function AuthPage() {
   return (
-    <LoginPage />
+    <Suspense fallback={<div className="min-h-screen w-screen bg-slate-900" />}>
+      <LoginPage />
+    </Suspense>
   );
 }

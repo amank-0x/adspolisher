@@ -54,5 +54,12 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: ["http://localhost:3000", "http://localhost:5173"],
+  trustedOrigins: [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    process.env.NEXT_APP_URL,
+    ...((process.env.WEB_ORIGIN || "").split(",").map((origin) => origin.trim()).filter(Boolean)),
+  ].filter((origin): origin is string => Boolean(origin)),
 });

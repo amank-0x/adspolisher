@@ -9,12 +9,16 @@ import { auth } from "./auth.js";
 const app = express();
 app.use(cors({
     origin: (origin, callback) => {
-        const allowedOrigins = [
+        const configuredOrigins = process.env.WEB_ORIGIN?.split(",").map((value) => value.trim()) ?? [];
+        const allowedOrigins = new Set([
+            ...configuredOrigins,
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
             "http://localhost:5173",
             "http://127.0.0.1:5173",
-        ];
+        ]);
         
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.has(origin)) {
             return callback(null, true);
         }
         return callback(new Error("Not allowed by CORS"));
