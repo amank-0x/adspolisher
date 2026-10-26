@@ -3,6 +3,8 @@ import cors from "cors";
 import morgan from "morgan";
 import indexRouter from "./routes/index.route.js";
 import cookieParser from "cookie-parser";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./auth.js";
 
 const app = express();
 app.use(cors({
@@ -28,6 +30,11 @@ app.get("/health", (req, res) => {
     res.json({ status: "alive" })
 })
 
-app.use("/api/v1", indexRouter)
+app.use("/api/v1", indexRouter);
+
+// handle all auth req
+app.all("/api/*auth", (req, res, next) => {
+    toNodeHandler(auth)(req as any, res as any).catch(next);
+})
 
 export default app;
