@@ -6,6 +6,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  USER
+  ADMIN
+  CREATOR
+}
 
 model User {
   id            String      @id @unique @default(uuid())
@@ -21,8 +26,6 @@ model User {
 
   accounts        Account[]
   sessions        Session[]
-  authorProfile   Author?
-  createdArticles Article[] @relation("ArticleCreator")
 }
 
 model Session {

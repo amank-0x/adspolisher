@@ -4,110 +4,102 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
-type LayoutType = "split" | "hero-banner" | "poster";
-
-type BaseCard = {
+type AdTemplate = {
   title: string;
   subtitle: string;
   category: string;
   metric: string;
-  headerBg: string;
-  accentColor: string;
-  imageUrl: string;
-  layoutType: LayoutType;
+  header: string;
+  accent: string;
+  canvas: string;
+  image: string;
 };
 
-type GridCell = { id: string; type: "empty" } | { id: string; type: "card"; card: BaseCard };
-
-const BASE_AD_CARDS: BaseCard[] = [
-  { title: "ROAST & CO. BLENDS", subtitle: "Specialty Coffee Campaign", category: "META CAROUSEL", metric: "4.2x ROAS", headerBg: "#D9480F", accentColor: "#F76707", imageUrl: "/isometric/Dribbble/1.png", layoutType: "hero-banner" },
-  { title: "DISCOVER ALPINE", subtitle: "Adventure Gear Launch", category: "DISPLAY SUITE", metric: "+164% CTR", headerBg: "#1D4ED8", accentColor: "#3B82F6", imageUrl: "/isometric/Dribbble/2.png", layoutType: "poster" },
-  { title: "ATELIER WEDDING", subtitle: "Bridal Editorial Ads", category: "SOCIAL VIDEO HOOKS", metric: "-41% CPA", headerBg: "#0F766E", accentColor: "#14B8A6", imageUrl: "/isometric/Dribbble/3.png", layoutType: "split" },
-  { title: "CRIMSON STUDIO", subtitle: "Brand Identity & Paid Social", category: "AD CREATIVE", metric: "3.9x ROAS", headerBg: "#B91C1C", accentColor: "#EF4444", imageUrl: "/isometric/Dribbble/4.png", layoutType: "hero-banner" },
-  { title: "S500 CUSTOM AUDIO", subtitle: "Product Launch Funnel", category: "CONVERSION ADS", metric: "5.4x ROAS", headerBg: "#1E293B", accentColor: "#475569", imageUrl: "/isometric/Dribbble/5.png", layoutType: "poster" },
-  { title: "SOLSTICE EYEWEAR", subtitle: "Summer Lookbook Paid Media", category: "TIKTOK & REELS", metric: "+215% ROAS", headerBg: "#EA580C", accentColor: "#FB923C", imageUrl: "/isometric/Dribbble/6.png", layoutType: "split" },
-  { title: "KINETIX RUN CLUB", subtitle: "Performance Footwear", category: "DYNAMIC RETARGETING", metric: "$11.20 CAC", headerBg: "#0284C7", accentColor: "#38BDF8", imageUrl: "/isometric/Dribbble/7.png", layoutType: "hero-banner" },
-  { title: "BOTANICA SKIN", subtitle: "Clean Beauty Acquisition", category: "UGC AD VARIATIONS", metric: "4.7x ROAS", headerBg: "#15803D", accentColor: "#22C55E", imageUrl: "/isometric/Dribbble/8.png", layoutType: "poster" },
-  { title: "PULSE FINTECH", subtitle: "B2B Demand Generation", category: "LINKEDIN ADS", metric: "$14 CPL", headerBg: "#7C3AED", accentColor: "#A78BFA", imageUrl: "/isometric/Dribbble/9.png", layoutType: "split" },
-  { title: "LUMINA AUDIO PRO", subtitle: "Product Story System", category: "AD COPY & HOOKS", metric: "2.9M VIEWS", headerBg: "#A21CAF", accentColor: "#E879F9", imageUrl: "/isometric/Dribbble/10.png", layoutType: "hero-banner" },
+const TEMPLATES: AdTemplate[] = [
+  { title: "ROAST & CO. BLENDS", subtitle: "Specialty Coffee Acquisition", category: "META CAROUSEL", metric: "4.2x ROAS", header: "#D9480F", accent: "#F76707", canvas: "linear-gradient(135deg,#FFF4E6,#FFD8A8)", image: "/isometric/Dribbble/1.png" },
+  { title: "DISCOVER ALPINE", subtitle: "Winter Gear Launch", category: "DISPLAY AD SUITE", metric: "+164% CTR", header: "#1D4ED8", accent: "#3B82F6", canvas: "linear-gradient(135deg,#DBEAFE,#93C5FD)", image: "/isometric/Dribbble/2.png" },
+  { title: "ATELIER BRIDAL", subtitle: "Editorial Lookbook Campaign", category: "PAID SOCIAL HOOKS", metric: "-41% CPA", header: "#0F766E", accent: "#14B8A6", canvas: "linear-gradient(135deg,#CCFBF1,#99F6E4)", image: "/isometric/Dribbble/3.png" },
+  { title: "CRIMSON STUDIO", subtitle: "Brand Identity & Paid Media", category: "AD CREATIVE", metric: "3.9x ROAS", header: "#B91C1C", accent: "#EF4444", canvas: "linear-gradient(135deg,#FEE2E2,#FCA5A5)", image: "/isometric/Dribbble/4.png" },
+  { title: "S500 STUDIO AUDIO", subtitle: "Direct-to-Consumer Funnel", category: "CONVERSION ADS", metric: "5.4x ROAS", header: "#1E293B", accent: "#475569", canvas: "linear-gradient(135deg,#E2E8F0,#CBD5E1)", image: "/isometric/Dribbble/5.png" },
+  { title: "SOLSTICE EYEWEAR", subtitle: "Summer Lookbook Paid Social", category: "TIKTOK & REELS", metric: "+215% ROAS", header: "#EA580C", accent: "#FB923C", canvas: "linear-gradient(135deg,#FFEDD5,#FDBA74)", image: "/isometric/Dribbble/6.png" },
+  { title: "KINETIX RUN CLUB", subtitle: "Performance Footwear Ads", category: "DYNAMIC RETARGETING", metric: "$11.20 CAC", header: "#0284C7", accent: "#38BDF8", canvas: "linear-gradient(135deg,#E0F2FE,#7DD3FC)", image: "/isometric/Dribbble/7.png" },
+  { title: "BOTANICA SKIN", subtitle: "Clean Beauty Acquisition", category: "UGC AD VARIATIONS", metric: "4.7x ROAS", header: "#15803D", accent: "#22C55E", canvas: "linear-gradient(135deg,#DCFCE7,#86EFAC)", image: "/isometric/Dribbble/8.png" },
+  { title: "PULSE FINTECH", subtitle: "B2B Demand Gen Campaign", category: "LINKEDIN ADS", metric: "$14 CPL", header: "#6D28D9", accent: "#8B5CF6", canvas: "linear-gradient(135deg,#EDE9FE,#C4B5FD)", image: "/isometric/Dribbble/9.png" },
+  { title: "LUMINA AUDIO PRO", subtitle: "Q4 Holiday Campaign", category: "YOUTUBE & META", metric: "6.1x ROAS", header: "#BE185D", accent: "#EC4899", canvas: "linear-gradient(135deg,#FCE7F3,#F9A8D4)", image: "/isometric/Dribbble/10.png" },
 ];
 
-function buildConnectedGrid(): GridCell[] {
-  const cells: GridCell[] = [];
-  let cardCounter = 0;
-
-  for (let row = 0; row < 13; row += 1) {
-    for (let column = 0; column < 4; column += 1) {
-      const structuralSlot =
-        (row === 0 && column <= 1) ||
-        (row === 1 && column === 0) ||
-        (row === 2 && column === 0) ||
-        (row === 4 && column === 0);
-
-      if (structuralSlot) {
-        cells.push({ id: `cell-${row}-${column}`, type: "empty" });
-      } else {
-        cells.push({ id: `cell-${row}-${column}`, type: "card", card: BASE_AD_CARDS[cardCounter % BASE_AD_CARDS.length] });
-        cardCounter += 1;
-      }
-    }
-  }
-
-  return cells;
-}
-
-const CONNECTED_GRID_CELLS = buildConnectedGrid();
+const COLS = 3;
+const TOTAL_CARDS = 95;
+const TOTAL_SLOTS = Math.ceil(TOTAL_CARDS / COLS) * COLS;
+const TOTAL_ROWS = TOTAL_SLOTS / COLS;
+const ROW_STRIDE = 330;
+const CARDS: (AdTemplate | null)[] = Array.from({ length: TOTAL_SLOTS }, (_, index) =>
+  index < TOTAL_CARDS ? TEMPLATES[index % TEMPLATES.length] : null,
+);
 
 export default function AdSpolisherHero() {
+  const trackRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
-    let targetScroll = window.scrollY;
-    let currentScroll = targetScroll;
+    let targetProgress = 0;
+    let currentProgress = 0;
     let targetMouseX = 0;
     let targetMouseY = 0;
     let currentMouseX = 0;
     let currentMouseY = 0;
-    let rafId = 0;
+    let frameId = 0;
 
-    const onScroll = () => {
-      targetScroll = window.scrollY;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      setScrollProgress(maxScroll > 0 ? Math.min(1, targetScroll / maxScroll) : 0);
+    const updateProgress = () => {
+      const track = trackRef.current;
+      if (!track) return;
+      const trackRect = track.getBoundingClientRect();
+      const scrollDistance = track.offsetHeight - window.innerHeight;
+      const scrolledDistance = Math.max(0, -trackRect.top);
+      targetProgress = scrollDistance > 0 ? Math.min(1, scrolledDistance / scrollDistance) : 0;
+      setScrollProgress(targetProgress);
     };
 
-    const onMouseMove = (event: MouseEvent) => {
-      targetMouseX = (event.clientX / window.innerWidth - 0.5) * 24;
-      targetMouseY = (event.clientY / window.innerHeight - 0.5) * 24;
+    const handleMouseMove = (event: MouseEvent) => {
+      targetMouseX = (event.clientX / window.innerWidth - 0.5) * 16;
+      targetMouseY = (event.clientY / window.innerHeight - 0.5) * 16;
     };
 
     const animate = () => {
-      currentScroll += (targetScroll - currentScroll) * 0.085;
+      currentProgress += (targetProgress - currentProgress) * 0.085;
       currentMouseX += (targetMouseX - currentMouseX) * 0.06;
       currentMouseY += (targetMouseY - currentMouseY) * 0.06;
 
       if (gridRef.current) {
-        gridRef.current.style.transform = `rotateX(56deg) rotateY(0deg) rotateZ(-45deg) translate3d(${currentMouseX}px, ${-currentScroll * 0.95 + currentMouseY}px, 0px) scale(var(--grid-scale, 1))`;
+        // Align the final row with the initial row's viewport position at the end of the track.
+        const planeScale = Number.parseFloat(
+          window.getComputedStyle(gridRef.current).getPropertyValue("--grid-scale"),
+        ) || 1;
+        const maxTravel = (TOTAL_ROWS - 1) * ROW_STRIDE * planeScale;
+        const travelY = -currentProgress * maxTravel;
+        gridRef.current.style.transform = `rotateX(52deg) rotateY(0deg) rotateZ(38deg) translate3d(${currentMouseX}px, ${travelY + currentMouseY}px, 0px) scale(var(--grid-scale, 1))`;
       }
 
-      rafId = requestAnimationFrame(animate);
+      frameId = requestAnimationFrame(animate);
     };
 
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("mousemove", onMouseMove, { passive: true });
-    rafId = requestAnimationFrame(animate);
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    frameId = requestAnimationFrame(animate);
 
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("mousemove", onMouseMove);
-      cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
+      window.removeEventListener("mousemove", handleMouseMove);
+      cancelAnimationFrame(frameId);
     };
   }, []);
 
   return (
-    <div className="iso-scroll-track">
+    <div className="iso-scroll-track" ref={trackRef}>
       <section className="iso-stage" aria-label="AdSpolisher scrollable creative showcase">
         <div className="iso-stage-grid" aria-hidden="true" />
         <div className="iso-stage-glow" aria-hidden="true" />
@@ -126,6 +118,38 @@ export default function AdSpolisherHero() {
           <a className="quote-button" href="#quote">Get a Quote</a>
         </header>
 
+        <div className="iso-grid-viewport" aria-label="Scrollable ad creative grid">
+          <div className="iso-grid-plane" ref={gridRef}>
+            {CARDS.map((card, index) => {
+              if (!card) return <div className="iso-card-placeholder" key={`final-slot-${index}`} aria-hidden="true" />;
+
+              const style = {
+                "--header": card.header,
+                "--accent": card.accent,
+                "--canvas": card.canvas,
+              } as CSSProperties;
+
+              return (
+                <article className="iso-card" key={`ad-${index + 1}`} style={style}>
+                  <div className="iso-card-header">
+                    <div className="iso-card-label"><span>{card.category}</span><b>{card.metric}</b></div>
+                    <div><h2>{card.title}</h2><p>{card.subtitle}</p></div>
+                  </div>
+                  <div className="iso-card-media">
+                    <Image src={card.image} alt={card.title} fill sizes="236px" />
+                    <span className="iso-card-badge">{card.metric} / AD #{String(index + 1).padStart(2, "0")}</span>
+                    <span className="iso-card-art" aria-hidden="true"><i /><i /><i /></span>
+                  </div>
+                  <div className="iso-card-footer">
+                    <div><i /><i /><i /></div>
+                    <b>↗</b>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="iso-copy">
           <div className="iso-copy-inner">
             <p className="iso-eyebrow"><span /> AD CREATIVE &amp; CAMPAIGN STUDIO</p>
@@ -136,40 +160,10 @@ export default function AdSpolisherHero() {
               <a className="iso-button iso-button--secondary" href="#services">Explore Services</a>
             </div>
             <div className="iso-scroll-status">
-              <span className="iso-pulse" />
-              <strong>Scrollable Ad Grid</strong>
-              <span className="iso-progress"><i style={{ width: `${Math.max(8, scrollProgress * 100)}%` }} /></span>
+              <div><span className="iso-pulse" /><strong>Bottom-left to top-right</strong></div>
+              <span className="iso-ad-count">{TOTAL_CARDS} Ads</span>
+              <span className="iso-progress"><i style={{ width: `${Math.max(6, scrollProgress * 100)}%` }} /></span>
             </div>
-          </div>
-        </div>
-
-        <div className="iso-grid-viewport" aria-label="Scrollable ad creative grid">
-          <div className="iso-grid-plane" ref={gridRef}>
-            {CONNECTED_GRID_CELLS.map((cell) => {
-              if (cell.type === "empty") {
-                return <div className="iso-grid-empty" key={cell.id} aria-hidden="true" />;
-              }
-
-              const card = cell.card;
-              const cardStyle = { "--header": card.headerBg, "--accent": card.accentColor } as CSSProperties;
-
-              return (
-                <article className={`iso-card iso-card--${card.layoutType}`} key={cell.id} style={cardStyle}>
-                  <div className="iso-card-header">
-                    <div className="iso-card-label"><span>{card.category}</span><b>{card.metric}</b></div>
-                    <div><h2>{card.title}</h2><p>{card.subtitle}</p></div>
-                  </div>
-                  <div className="iso-card-media">
-                    <Image src={card.imageUrl} alt={card.title} fill sizes="300px" />
-                    <span>Live Campaign</span>
-                  </div>
-                  <div className="iso-card-footer">
-                    <div><i /><i /><i /></div>
-                    <b>↗</b>
-                  </div>
-                </article>
-              );
-            })}
           </div>
         </div>
       </section>
