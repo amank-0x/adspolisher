@@ -1,5 +1,30 @@
 import { authClient } from "./auth-client";
 
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
+
+async function requestPasswordRecovery(path: string, body: Record<string, string>) {
+  const response = await fetch(`${API_URL}/api/v1/auth/${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const result = (await response.json().catch(() => ({}))) as { message?: string };
+  if (!response.ok) throw new Error(result.message || "Password recovery failed. Please try again.");
+  return result;
+}
+
+export function requestPasswordReset(email: string) {
+  return requestPasswordRecovery("forget-password", { email });
+}
+
+export function resetPasswordWithMagicLink(token: string, password: string) {
+  return requestPasswordRecovery(`reset-password?token=${encodeURIComponent(token)}`, { password });
+}
+
+export function resetPasswordWithOtp(email: string, otp: string, password: string) {
+  return requestPasswordRecovery("reset-password/otp", { email, otp, password });
+}
+
 type EmailCredentials = {
   email: string;
   password: string;

@@ -11,6 +11,7 @@ export function LoginPage() {
   const router = useRouter()
   const modeParam = searchParams.get('mode')
   const isSignIn = modeParam !== 'signup'
+  const passwordReset = searchParams.get('passwordReset') === '1'
 
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -151,6 +152,12 @@ export function LoginPage() {
             </div>
           )}
 
+          {passwordReset && (
+            <div className="mb-5 rounded-xl border border-green-200 bg-green-50 p-3.5 text-sm text-green-800" role="status">
+              Your password has been reset. Sign in with your new password.
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Full Name for Signup */}
@@ -235,6 +242,7 @@ export function LoginPage() {
                 </label>
                 <button
                   type="button"
+                  onClick={() => router.push(`/auth/forgot-password?email=${encodeURIComponent(formData.email)}`)}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
                 >
                   Forgot password?
