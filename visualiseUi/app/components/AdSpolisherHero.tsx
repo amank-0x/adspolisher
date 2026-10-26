@@ -29,10 +29,12 @@ const TEMPLATES: AdTemplate[] = [
 ];
 
 const COLS = 3;
-const TOTAL_CARDS = 95;
+const TOTAL_CARDS = 45;
 const TOTAL_SLOTS = Math.ceil(TOTAL_CARDS / COLS) * COLS;
 const TOTAL_ROWS = TOTAL_SLOTS / COLS;
 const ROW_STRIDE = 330;
+const SCROLL_SPEED = 0.42;
+const SCROLL_DISTANCE = ((TOTAL_ROWS - 1) * ROW_STRIDE) / SCROLL_SPEED;
 const CARDS: (AdTemplate | null)[] = Array.from({ length: TOTAL_SLOTS }, (_, index) =>
   index < TOTAL_CARDS ? TEMPLATES[index % TEMPLATES.length] : null,
 );
@@ -61,7 +63,7 @@ export default function AdSpolisherHero() {
     };
 
     const animate = () => {
-      currentProgress += (targetProgress - currentProgress) * 0.02;
+      currentProgress += (targetProgress - currentProgress) * 0.07;
       if (Math.abs(targetProgress - currentProgress) < 0.00005) {
         currentProgress = targetProgress;
       }
@@ -92,7 +94,7 @@ export default function AdSpolisherHero() {
   }, []);
 
   return (
-    <div className="iso-scroll-track" ref={trackRef}>
+    <div className="iso-scroll-track" ref={trackRef} style={{ "--scroll-distance": `${SCROLL_DISTANCE}px` } as CSSProperties}>
       <section className="iso-stage" aria-label="AdSpolisher scrollable creative showcase">
         <div className="iso-stage-grid" aria-hidden="true" />
         <div className="iso-stage-glow" aria-hidden="true" />
