@@ -30,25 +30,6 @@ export const auth = betterAuth({
       ipAddressHeaders: ["x-forwarded-for", "x-real-ip"],
     },
   },
-  databaseHooks: {
-    session: {
-      create: {
-        before: async (session, context) => {
-          const user = await prismaClient.user.findUnique({
-            where: { id: session.userId },
-            select: { role: true },
-          });
-
-          // Admin sessions must explicitly carry proof that the OTP step
-          // succeeded. This blocks password, OAuth, and other session paths
-          // from bypassing the second factor.
-          if (user?.role === "ADMIN" && session.adminOtpVerified !== true) {
-            return false;
-          }
-        },
-      },
-    },
-  },
   session: {
     additionalFields: {
       adminOtpVerified: {
@@ -62,18 +43,14 @@ export const auth = betterAuth({
   },
   user: {
     additionalFields: {
-      role: {
+      appRole: {
         type: "string",
         required: false,
-        defaultValue: "USER",
+        defaultValue: "CUSTOMER",
         // Public signup and update requests must never be able to
-        // promote themselves to AUTHOR or ADMIN.
+        // promote themselves to an elevated application role.
         input: false,
         returned: true,
-      },
-      avatarId: {
-        type: "string",
-        required: false,
       },
     },
   },
