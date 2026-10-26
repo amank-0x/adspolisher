@@ -40,16 +40,12 @@ const CARDS: (AdTemplate | null)[] = Array.from({ length: TOTAL_SLOTS }, (_, ind
 export default function AdSpolisherHero() {
   const trackRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     let targetProgress = 0;
     let currentProgress = 0;
-    let targetMouseX = 0;
-    let targetMouseY = 0;
-    let currentMouseX = 0;
-    let currentMouseY = 0;
     let frameId = 0;
+    let initialized = false;
 
     const updateProgress = () => {
       const track = trackRef.current;
@@ -58,18 +54,17 @@ export default function AdSpolisherHero() {
       const scrollDistance = track.offsetHeight - window.innerHeight;
       const scrolledDistance = Math.max(0, -trackRect.top);
       targetProgress = scrollDistance > 0 ? Math.min(1, scrolledDistance / scrollDistance) : 0;
-      setScrollProgress(targetProgress);
-    };
-
-    const handleMouseMove = (event: MouseEvent) => {
-      targetMouseX = (event.clientX / window.innerWidth - 0.5) * 16;
-      targetMouseY = (event.clientY / window.innerHeight - 0.5) * 16;
+      if (!initialized) {
+        currentProgress = targetProgress;
+        initialized = true;
+      }
     };
 
     const animate = () => {
-      currentProgress += (targetProgress - currentProgress) * 0.085;
-      currentMouseX += (targetMouseX - currentMouseX) * 0.06;
-      currentMouseY += (targetMouseY - currentMouseY) * 0.06;
+      currentProgress += (targetProgress - currentProgress) * 0.02;
+      if (Math.abs(targetProgress - currentProgress) < 0.00005) {
+        currentProgress = targetProgress;
+      }
 
       if (gridRef.current) {
         // Align the final row with the initial row's viewport position at the end of the track.
@@ -78,7 +73,7 @@ export default function AdSpolisherHero() {
         ) || 1;
         const maxTravel = (TOTAL_ROWS - 1) * ROW_STRIDE * planeScale;
         const travelY = -currentProgress * maxTravel;
-        gridRef.current.style.transform = `rotateX(52deg) rotateY(0deg) rotateZ(38deg) translate3d(${currentMouseX}px, ${travelY + currentMouseY}px, 0px) scale(var(--grid-scale, 1))`;
+        gridRef.current.style.transform = `rotateX(52deg) rotateY(0deg) rotateZ(38deg) translate3d(0px, ${travelY}px, 0px) scale(var(--grid-scale, 1))`;
       }
 
       frameId = requestAnimationFrame(animate);
@@ -87,13 +82,11 @@ export default function AdSpolisherHero() {
     updateProgress();
     window.addEventListener("scroll", updateProgress, { passive: true });
     window.addEventListener("resize", updateProgress);
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
     frameId = requestAnimationFrame(animate);
 
     return () => {
       window.removeEventListener("scroll", updateProgress);
       window.removeEventListener("resize", updateProgress);
-      window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(frameId);
     };
   }, []);
@@ -150,22 +143,6 @@ export default function AdSpolisherHero() {
           </div>
         </div>
 
-        <div className="iso-copy">
-          <div className="iso-copy-inner">
-            <p className="iso-eyebrow"><span /> AD CREATIVE &amp; CAMPAIGN STUDIO</p>
-            <h1>Better Ads.<br />Stronger Brands.<br /><em>More Growth.</em></h1>
-            <p className="iso-summary">From scroll-stopping creatives to smarter ad campaigns, we help businesses turn ideas into marketing that works.</p>
-            <div className="iso-actions">
-              <a className="iso-button iso-button--primary" href="#quote">Start a Project <span>→</span></a>
-              <a className="iso-button iso-button--secondary" href="#services">Explore Services</a>
-            </div>
-            <div className="iso-scroll-status">
-              <div><span className="iso-pulse" /><strong>Bottom-left to top-right</strong></div>
-              <span className="iso-ad-count">{TOTAL_CARDS} Ads</span>
-              <span className="iso-progress"><i style={{ width: `${Math.max(6, scrollProgress * 100)}%` }} /></span>
-            </div>
-          </div>
-        </div>
       </section>
     </div>
   );
