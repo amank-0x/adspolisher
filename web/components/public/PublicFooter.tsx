@@ -64,7 +64,7 @@ export function PublicFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-black/10 pt-8 sm:flex-row text-xs text-neutral-500">
-          <p>&copy; {new Date().getFullYear()} AdsPolisher. All rights reserved. Service-led ad production agency.</p>
+          <p>&copy; 2026 AdsPolisher. All rights reserved. Service-led ad production agency.</p>
           <div className="flex items-center gap-6">
             <Link href="/#faq" className="hover:text-neutral-800">FAQs</Link>
             <span>&bull;</span>
