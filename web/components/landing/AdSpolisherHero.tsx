@@ -140,14 +140,14 @@ export default function AdSpolisherHero() {
 
   return (
     <div className="iso-scroll-track" ref={trackRef} style={{ "--scroll-distance": `${SCROLL_DISTANCE}px` } as CSSProperties}>
-      <section className="iso-stage" aria-label="AdSpolisher scrollable creative showcase">
+      <section className="iso-stage" aria-label="AdsPolisher scrollable creative showcase">
         <div className="iso-stage-grid" aria-hidden="true" />
 
         <header className="stage-nav stage-nav--floating">
-          <a className="stage-brand" href="#top" aria-label="AdSpolisher home">
+          <a className="stage-brand" href="#top" aria-label="AdsPolisher home">
             <Image
               src="/logo/adspolisher_color.png"
-              alt="AdSpolisher"
+              alt="AdsPolisher"
               width={170}
               height={54}
               className="stage-brand-logo"

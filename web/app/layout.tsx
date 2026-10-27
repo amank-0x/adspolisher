@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AdSpolisher | Creative Ad Studio",
-  description: "A scrollable showcase of AdSpolisher creative campaigns.",
+  title: "AdsPolisher | Creative Ad Studio",
+  description: "A scrollable showcase of AdsPolisher creative campaigns.",
   icons: {
-    icon: "/logo/adspolisher.png",
-    shortcut: "/logo/adspolisher.png",
-    apple: "/logo/adspolisher.png",
+    icon: "/logo/adspolisher_color.png",
+    shortcut: "/logo/adspolisher_color.png",
+    apple: "/logo/adspolisher_color.png",
   },
 };
 

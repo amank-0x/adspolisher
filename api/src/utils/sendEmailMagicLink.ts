@@ -10,7 +10,7 @@ export const sendEmailResetLink = async (to: string, name: string, link: string)
         const res = await resend.emails.send({
             from: "AdsPolisher <info@adspolisher.com>",
             to: to,
-            subject: "Reset your AdSpolisher password",
+            subject: "Reset your AdsPolisher password",
             html: message
         })
 

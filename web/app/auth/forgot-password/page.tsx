@@ -48,7 +48,7 @@ function ForgotPasswordForm() {
         </Link>
         <img
           src="https://cdn.21st.dev/assets/mirror/0d/0d205a1a31d40e927885b0ec5f603407caa10585b5bc6e8b08240402c7417e86.png"
-          alt="AdSpolisher creative showcase"
+          alt="AdsPolisher creative showcase"
           className="absolute inset-0 h-full w-full object-cover"
         />
       </section>
@@ -65,8 +65,8 @@ function ForgotPasswordForm() {
         <div className="w-full max-w-md p-2 sm:p-6">
           <div className="mb-8">
             <Link href="/" className="mb-6 inline-flex items-center gap-2.5 group">
-              <Image src="/logo/adspolisher.png" alt="AdSpolisher Logo" width={38} height={38} className="h-9 w-9 rounded-lg object-contain" priority />
-              <span className="text-xl font-extrabold tracking-tight text-gray-900 transition-colors group-hover:text-blue-600">AdSpolisher</span>
+              <Image src="/logo/adspolisher.png" alt="AdsPolisher Logo" width={38} height={38} className="h-9 w-9 rounded-lg object-contain" priority />
+              <span className="text-xl font-extrabold tracking-tight text-gray-900 transition-colors group-hover:text-blue-600">AdsPolisher</span>
             </Link>
             <h1 className="mb-2 text-3xl font-bold text-gray-900">Forgot your password?</h1>
             <p className="text-gray-600">Enter your account email and we’ll send recovery instructions.</p>

@@ -121,14 +121,14 @@ export function LoginPage() {
             <Link href="/" className="inline-flex items-center gap-2.5 mb-6 group">
               <Image
                 src="/logo/adspolisher.png"
-                alt="AdSpolisher Logo"
+                alt="AdsPolisher Logo"
                 width={38}
                 height={38}
                 className="h-9 w-9 rounded-lg object-contain"
                 priority
               />
               <span className="text-xl font-extrabold tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors">
-                AdSpolisher
+                AdsPolisher
               </span>
             </Link>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">

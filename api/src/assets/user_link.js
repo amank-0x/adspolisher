@@ -16,7 +16,7 @@ export default function getUserResetLinkHtml(userName, link) {
                 <meta name="x-apple-disable-message-reformatting">
                 <meta name="color-scheme" content="light only">
                 <meta name="supported-color-schemes" content="light only">
-                <title>Reset your AdSpolisher password</title>
+                <title>Reset your AdsPolisher password</title>
                 <style>
                     body { margin: 0; padding: 0; width: 100% !important; background-color: #FFFFFF; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
                     table, td { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
@@ -45,7 +45,7 @@ export default function getUserResetLinkHtml(userName, link) {
                                 <!-- Logo -->
                                 <tr>
                                     <td class="px" align="left" style="padding:0 24px 20px 24px;">
-                                            <span style="font-size:24px; line-height:1; letter-spacing:-0.6px;"><span style="color:#000000; font-weight:800;">AdSpolisher</span></span>
+                                            <span style="font-size:24px; line-height:1; letter-spacing:-0.6px;"><span style="color:#000000; font-weight:800;">AdsPolisher</span></span>
                                     </td>
                                 </tr>
 
@@ -71,7 +71,7 @@ export default function getUserResetLinkHtml(userName, link) {
                                         </p>
 
                                         <p style="margin:0 0 24px 0; font-size:15px; line-height:1.6; color:#3C4043;">
-                                            We received a request to reset the password for your AdSpolisher account.
+                                            We received a request to reset the password for your AdsPolisher account.
                                             Please click the link below to create a new password.
                                         </p>
 
@@ -117,8 +117,8 @@ export default function getUserResetLinkHtml(userName, link) {
                                 <!-- Footer -->
                                 <tr>
                                     <td class="px" align="left" style="padding:32px 24px 0 24px; font-size:12px; line-height:1.7; color:#80868B;">
-                                        <span style="color:#000000; font-weight:700;">AdSpolisher</span><br>
-                                        &copy; ${new Date().getFullYear()} AdSpolisher. All rights reserved.<br>
+                                        <span style="color:#000000; font-weight:700;">AdsPolisher</span><br>
+                                        &copy; ${new Date().getFullYear()} AdsPolisher. All rights reserved.<br>
                                         This is an automated message, please do not reply.
                                     </td>
                                 </tr>

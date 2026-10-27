@@ -17,7 +17,7 @@ export default function getAdminOtpHtml(userName, otp, purpose = "sign-in") {
             <meta name="x-apple-disable-message-reformatting">
             <meta name="color-scheme" content="light only">
             <meta name="supported-color-schemes" content="light only">
-            <title>${isPasswordReset ? "AdSpolisher password reset code" : "AdSpolisher sign-in verification code"}</title>
+            <title>${isPasswordReset ? "AdsPolisher password reset code" : "AdsPolisher sign-in verification code"}</title>
             <style>
                 body { margin: 0; padding: 0; width: 100% !important; background-color: #FFFFFF; -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
                 table, td { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
@@ -52,7 +52,7 @@ export default function getAdminOtpHtml(userName, otp, purpose = "sign-in") {
                                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                                         <tr>
                                             <td align="left">
-                                        <span style="font-size:28px; line-height:1; letter-spacing:-0.7px;"><span style="color:#000000; font-weight:800;">AdSpolisher</span></span>
+                                        <span style="font-size:28px; line-height:1; letter-spacing:-0.7px;"><span style="color:#000000; font-weight:800;">AdsPolisher</span></span>
                                             </td>
                                             <td align="right" style="font-size:11px; font-weight:700; letter-spacing:1.4px; text-transform:uppercase; color:#5F6368;">
                                                 Admin Security
@@ -84,7 +84,7 @@ export default function getAdminOtpHtml(userName, otp, purpose = "sign-in") {
                                     </p>
 
                                     <p style="margin:0 0 16px 0; font-size:16px; line-height:1.7; color:#3C4043;">
-                                        ${isPasswordReset ? "We received a request to reset the password for your AdSpolisher account." : "A sign-in attempt was made to the AdSpolisher administrator console using your account. Because staff accounts have elevated access, we require an additional verification step before granting access."}
+                                        ${isPasswordReset ? "We received a request to reset the password for your AdsPolisher account." : "A sign-in attempt was made to the AdsPolisher administrator console using your account. Because staff accounts have elevated access, we require an additional verification step before granting access."}
                                     </p>
 
                                     <p style="margin:0 0 28px 0; font-size:16px; line-height:1.7; color:#3C4043;">
@@ -136,7 +136,7 @@ export default function getAdminOtpHtml(userName, otp, purpose = "sign-in") {
                                         <tr>
                                             <td style="padding:16px 18px; font-size:14px; line-height:1.7; color:#5F2120;">
                                                 <strong style="color:#B3261E;">Do not share this code.</strong>
-                                                AdSpolisher staff will never ask you for this code. ${isPasswordReset ? "This code can only be used once to reset your password." : "Never share it with anyone."}
+                                                AdsPolisher staff will never ask you for this code. ${isPasswordReset ? "This code can only be used once to reset your password." : "Never share it with anyone."}
                                             </td>
                                         </tr>
                                     </table>
@@ -148,7 +148,7 @@ export default function getAdminOtpHtml(userName, otp, purpose = "sign-in") {
                                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 32px 0;">
                                         <tr>
                                             <td valign="top" width="20" style="padding:0 0 10px 0; font-size:14px; line-height:1.7; color:#202124;">&bull;</td>
-                                            <td valign="top" style="padding:0 0 10px 0; font-size:14px; line-height:1.7; color:#3C4043;">Only enter this code on the official AdSpolisher ${isPasswordReset ? "password reset" : "login"} page. Check the web address before you type it.</td>
+                                            <td valign="top" style="padding:0 0 10px 0; font-size:14px; line-height:1.7; color:#3C4043;">Only enter this code on the official AdsPolisher ${isPasswordReset ? "password reset" : "login"} page. Check the web address before you type it.</td>
                                         </tr>
                                         <tr>
                                             <td valign="top" width="20" style="padding:0 0 10px 0; font-size:14px; line-height:1.7; color:#202124;">&bull;</td>
@@ -190,7 +190,7 @@ export default function getAdminOtpHtml(userName, otp, purpose = "sign-in") {
                                 <td class="px" align="left" style="padding:36px 40px 0 40px; font-size:12px; line-height:1.7; color:#80868B;">
                                     <span style="color:#8A8A8A; font-weight:500;">View</span><span style="color:#000000; font-weight:700;">Galaxies</span><br>
                                     ${isPasswordReset ? "You are receiving this email because a password reset was requested for your account." : "You are receiving this email because a sign-in to the administrator console was requested for your account."}<br>
-                                    &copy; ${new Date().getFullYear()} AdSpolisher. All rights reserved.<br>
+                                    &copy; ${new Date().getFullYear()} AdsPolisher. All rights reserved.<br>
                                     This is an automated security message, please do not reply.
                                 </td>
                             </tr>

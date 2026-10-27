@@ -14,7 +14,7 @@ export const sendEmailOtp = async (
   const response = await resend.emails.send({
     from: "AdsPolisher <info@adspolisher.com>",
     to,
-    subject: purpose === "password-reset" ? "Reset your AdSpolisher password" : "Login to your admin dashboard",
+    subject: purpose === "password-reset" ? "Reset your AdsPolisher password" : "Login to your admin dashboard",
     html: message,
   });
 
