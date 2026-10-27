@@ -57,6 +57,7 @@ async function sendResetLink(req: Request, res: Response) {
             where: { email },
             select: { id: true, email: true, name: true, appRole: true },
         });
+        let emailDeliveryFailed = false;
 
         // Same response for unknown addresses and successful sends prevents account enumeration.
         if (user?.appRole === "CUSTOMER") {
@@ -72,6 +73,7 @@ async function sendResetLink(req: Request, res: Response) {
             const sent = await sendEmailResetLink(user.email, user.name, link);
             if (!sent) {
                 await prismaClient.verification.deleteMany({ where: { identifier } });
+                emailDeliveryFailed = true;
             }
         } else if (user && ["ADMIN", "CREATOR"].includes(user.appRole)) {
             const otp = String(randomInt(0, 1_000_000)).padStart(6, "0");
@@ -85,7 +87,14 @@ async function sendResetLink(req: Request, res: Response) {
             } catch (error) {
                 await prismaClient.verification.deleteMany({ where: { identifier } });
                 console.error("Password recovery code could not be delivered", error);
+                emailDeliveryFailed = true;
             }
+        }
+
+        if (emailDeliveryFailed) {
+            return res.status(502).json({
+                message: "We couldn't send the recovery email right now. Please try again in a few minutes.",
+            });
         }
 
         return res.status(200).json({ message: "If an account matches that email, recovery instructions have been sent." });

@@ -1,4 +1,4 @@
-import AdSpolisherHero from "./components/AdSpolisherHero";
+import AdSpolisherHero from "../components/landing/AdSpolisherHero";
 
 export default function Home() {
   return (

@@ -8,7 +8,7 @@ export const sendEmailResetLink = async (to: string, name: string, link: string)
         const message = getUserResetLinkHtml(name, link);
 
         const res = await resend.emails.send({
-            from: "AdSpolisher <auth@viewgalaxies.com>",
+            from: "AdsPolisher <info@adspolisher.com>",
             to: to,
             subject: "Reset your AdSpolisher password",
             html: message

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -117,6 +118,19 @@ export function LoginPage() {
 
         <div className="w-full max-w-md p-2 sm:p-6">
           <div className="mb-8">
+            <Link href="/" className="inline-flex items-center gap-2.5 mb-6 group">
+              <Image
+                src="/logo/adspolisher.png"
+                alt="AdSpolisher Logo"
+                width={38}
+                height={38}
+                className="h-9 w-9 rounded-lg object-contain"
+                priority
+              />
+              <span className="text-xl font-extrabold tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors">
+                AdSpolisher
+              </span>
+            </Link>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {isSignIn ? 'Welcome Back' : 'Create an Account'}
             </h1>

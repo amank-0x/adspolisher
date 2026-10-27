@@ -109,13 +109,14 @@ export default function AdSpolisherHero() {
         ) || 1;
         const maxTravel = (TOTAL_ROWS - 1) * ROW_STRIDE * planeScale;
         const travelY = -currentProgress * maxTravel;
-        gridRef.current.style.transform = `rotateX(52deg) rotateY(0deg) rotateZ(38deg) translate3d(0px, ${travelY}px, 0px) scale(var(--grid-scale, 1))`;
+        gridRef.current.style.transform = `translate3d(-145px, 0px, 0px) rotateX(52deg) rotateY(0deg) rotateZ(38deg) translate3d(0px, ${travelY}px, 0px) scale(var(--grid-scale, 1))`;
       }
 
       if (heroRef.current) {
         const velocity = currentProgress - targetProgress;
         const tilt = Math.max(-3, Math.min(3, velocity * 100));
-        heroRef.current.style.transform = `perspective(1200px) rotateX(${tilt}deg) translate3d(0, ${Math.sin(currentProgress * Math.PI * 8) * 2}px, 0)`;
+        const floatY = Math.sin(currentProgress * Math.PI * 8) * 2;
+        heroRef.current.style.transform = `perspective(1200px) rotateX(${tilt}deg) translate3d(28px, ${78 + floatY}px, 0)`;
       }
 
       frameId = requestAnimationFrame(animate);
@@ -141,12 +142,17 @@ export default function AdSpolisherHero() {
     <div className="iso-scroll-track" ref={trackRef} style={{ "--scroll-distance": `${SCROLL_DISTANCE}px` } as CSSProperties}>
       <section className="iso-stage" aria-label="AdSpolisher scrollable creative showcase">
         <div className="iso-stage-grid" aria-hidden="true" />
-        <div className="iso-stage-glow" aria-hidden="true" />
 
         <header className="stage-nav stage-nav--floating">
           <a className="stage-brand" href="#top" aria-label="AdSpolisher home">
-            <span className="stage-brand-mark" aria-hidden="true"><i /><i /><i /></span>
-            AdSpolisher
+            <Image
+              src="/logo/adspolisher_color.png"
+              alt="AdSpolisher"
+              width={170}
+              height={54}
+              className="stage-brand-logo"
+              priority
+            />
           </a>
           <nav className={`stage-nav-links${scrollProgress > 0.02 ? " is-scrolled" : ""}`} aria-label="Primary navigation">
             <a href="#services">Services</a>

@@ -12,7 +12,7 @@ export const sendEmailOtp = async (
   const message = getAdminOtpHtml(name, otp, purpose);
 
   const response = await resend.emails.send({
-    from: "AdSpolisher <auth@viewgalaxies.com>",
+    from: "AdsPolisher <info@adspolisher.com>",
     to,
     subject: purpose === "password-reset" ? "Reset your AdSpolisher password" : "Login to your admin dashboard",
     html: message,
