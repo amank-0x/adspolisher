@@ -102,10 +102,10 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           <Link
             href="/dashboard/requests/new"
             onClick={() => setMobileSidebarOpen(false)}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 shadow-xs"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-black px-4 py-2.5 text-xs font-semibold !text-white transition-colors hover:bg-neutral-800 shadow-xs"
           >
-            <Plus className="h-3.5 w-3.5" />
-            <span>Start a Project</span>
+            <Plus className="h-3.5 w-3.5 !text-white" />
+            <span className="!text-white">Start a Project</span>
           </Link>
         </div>
 
@@ -125,19 +125,19 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   onClick={() => setMobileSidebarOpen(false)}
                   className={`flex items-center justify-between rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
                     active
-                      ? "bg-neutral-900 text-white font-semibold"
+                      ? "bg-neutral-900 !text-white font-semibold"
                       : "text-neutral-600 hover:bg-black/[0.04] hover:text-black"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Icon className="h-4 w-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <Icon className={`h-4 w-4 shrink-0 ${active ? "!text-white" : "text-neutral-500"}`} />
+                    <span className={active ? "!text-white" : ""}>{item.label}</span>
                   </div>
                   {item.badge && (
                     <span
                       className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
                         active
-                          ? "bg-neutral-800 text-neutral-200"
+                          ? "bg-neutral-800 !text-neutral-100"
                           : "bg-neutral-200/80 text-neutral-700"
                       }`}
                     >

@@ -1,0 +1,23 @@
+.showcase {
+  position: relative;
+  width: 100%;
+  height: auto;
+  padding-bottom: clamp(72px, 9vw, 128px);
+  overflow: hidden;
+  background: #f7f5f0;
+}
+
+.slideshow {
+  display: block;
+  width: 100%;
+  height: 100svh;
+  min-height: 620px;
+  border: 0;
+  background: #f7f5f0;
+}
+
+@media (max-width: 560px) {
+  .slideshow {
+    min-height: 600px;
+  }
+}
