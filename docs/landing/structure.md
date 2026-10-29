@@ -56,7 +56,7 @@ Explain the customer journey in four simple steps:
 This reduces uncertainty about what happens after someone clicks “Start a Project.”
 
 
-7. Why AdSpolisher?
+7. Why AdSpolisher? # skip
 
 Explain your differentiation rather than using generic claims.
 - AI-assisted speed with human quality control.
@@ -97,7 +97,7 @@ Answer the questions that might stop a visitor from starting:
 Keep answers short and honest. Avoid promising guaranteed results.
 
 
-11. Final CTA — Convert interested visitors
+11. Final CTA — Convert interested visitors # skip
 
 After explaining your value, ask the visitor to take the next step.
 

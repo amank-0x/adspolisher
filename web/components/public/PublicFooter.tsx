@@ -20,12 +20,6 @@ export function PublicFooter() {
             <p className="max-w-sm text-sm leading-relaxed text-neutral-600">
               High-converting ad creative and campaign production for ambitious brands. AI-assisted speed with experienced human creative direction.
             </p>
-            <div className="mt-6 flex items-center gap-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-600/30 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                Intake open for Q4 projects
-              </span>
-            </div>
           </div>
 
           {/* Solutions Col */}
