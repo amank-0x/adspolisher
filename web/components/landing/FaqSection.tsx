@@ -53,7 +53,11 @@ const FAQ_ITEMS: FaqItem[] = [
   },
 ];
 
-export default function FaqSection() {
+export default function FaqSection({
+  hideContactLink = false,
+}: {
+  hideContactLink?: boolean;
+} = {}) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggleItem = (idx: number) => {
@@ -84,20 +88,41 @@ export default function FaqSection() {
             </h2>
 
             <p className="mt-5 text-base leading-relaxed text-[#4A4945] sm:text-lg lg:text-[1.125rem]">
-              Explore our{" "}
-              <a
-                href="#pricing"
-                className="font-semibold text-[#4F46E5] underline decoration-[#4F46E5] decoration-2 underline-offset-4 transition-colors hover:text-[#D9480F] hover:decoration-[#D9480F]"
-              >
-                Pricing Packages
-              </a>{" "}
-              or{" "}
-              <Link
-                href="/start-project"
-                className="font-semibold text-[#4F46E5] underline decoration-[#4F46E5] decoration-2 underline-offset-4 transition-colors hover:text-[#D9480F] hover:decoration-[#D9480F]"
-              >
-                send us a message!
-              </Link>
+              {hideContactLink ? (
+                <>
+                  Explore our{" "}
+                  <Link
+                    href="/#pricing"
+                    className="font-semibold text-[#4F46E5] underline decoration-[#4F46E5] decoration-2 underline-offset-4 transition-colors hover:text-[#D9480F] hover:decoration-[#D9480F]"
+                  >
+                    Pricing Packages
+                  </Link>{" "}
+                  or{" "}
+                  <a
+                    href="#start-project-form"
+                    className="font-semibold text-[#4F46E5] underline decoration-[#4F46E5] decoration-2 underline-offset-4 transition-colors hover:text-[#D9480F] hover:decoration-[#D9480F]"
+                  >
+                    fill out the form above!
+                  </a>
+                </>
+              ) : (
+                <>
+                  Explore our{" "}
+                  <a
+                    href="#pricing"
+                    className="font-semibold text-[#4F46E5] underline decoration-[#4F46E5] decoration-2 underline-offset-4 transition-colors hover:text-[#D9480F] hover:decoration-[#D9480F]"
+                  >
+                    Pricing Packages
+                  </a>{" "}
+                  or{" "}
+                  <Link
+                    href="/start-project"
+                    className="font-semibold text-[#4F46E5] underline decoration-[#4F46E5] decoration-2 underline-offset-4 transition-colors hover:text-[#D9480F] hover:decoration-[#D9480F]"
+                  >
+                    send us a message!
+                  </Link>
+                </>
+              )}
             </p>
 
             {/* Enlarged Transparent faq-bear Illustration */}

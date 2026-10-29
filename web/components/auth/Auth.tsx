@@ -6,12 +6,22 @@ import { Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { signInWithEmail, signInWithGoogle, signUpWithEmail } from '@/lib/auth-api'
+import { signOut } from '@/lib/auth-client'
 
-export function LoginPage() {
+type AuthPortal = 'customer' | 'creator' | 'admin'
+
+const PORTAL_CONFIG: Record<AuthPortal, { title: string; description: string; home: string; role: string }> = {
+  customer: { title: 'Welcome Back', description: 'Sign in to your customer workspace.', home: '/dashboard', role: 'CUSTOMER' },
+  creator: { title: 'Creator Sign In', description: 'Sign in to view your assigned work and feedback.', home: '/creator', role: 'CREATOR' },
+  admin: { title: 'Admin Sign In', description: 'Sign in to manage AdSpolisher operations.', home: '/admin', role: 'ADMIN' },
+}
+
+export function LoginPage({ portal = 'customer' }: { portal?: AuthPortal }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const modeParam = searchParams.get('mode')
-  const isSignIn = modeParam !== 'signup'
+  const isSignIn = portal !== 'customer' || modeParam !== 'signup'
+  const portalConfig = PORTAL_CONFIG[portal]
   const passwordReset = searchParams.get('passwordReset') === '1'
 
   const [showPassword, setShowPassword] = useState(false)
@@ -43,11 +53,19 @@ export function LoginPage() {
 
     try {
       if (isSignIn) {
-        await signInWithEmail({
+        const role = await signInWithEmail({
           email: formData.email,
           password: formData.password,
           rememberMe: formData.rememberMe,
         })
+        const roleHome = role === 'ADMIN' ? '/admin' : role === 'CREATOR' ? '/creator' : '/dashboard'
+        if (portal !== 'customer' && role !== portalConfig.role) {
+          await signOut()
+          setErrorLabel('Workspace access error')
+          setErrorMessage(`This account does not have ${portal} access. Sign in through the correct workspace.`)
+          return
+        }
+        router.replace(roleHome)
       } else {
         await signUpWithEmail({
           name: formData.name,
@@ -55,7 +73,7 @@ export function LoginPage() {
           password: formData.password,
         })
       }
-      router.replace('/dashboard')
+      if (!isSignIn) router.replace(portalConfig.home)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred.'
       setErrorLabel(isSignIn ? 'Sign-in error' : 'Account creation error')
@@ -70,7 +88,7 @@ export function LoginPage() {
     setErrorLabel('')
     setIsGoogleLoading(true)
     try {
-      await signInWithGoogle()
+      await signInWithGoogle(`${window.location.origin}${portalConfig.home}`)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to connect to Google.'
       setErrorLabel('Google sign-in error')
@@ -132,10 +150,10 @@ export function LoginPage() {
               </span>
             </Link>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {isSignIn ? 'Welcome Back' : 'Create an Account'}
+              {isSignIn ? portalConfig.title : 'Create an Account'}
             </h1>
             <p className="text-gray-600">
-              {isSignIn ? (
+              {portal !== 'customer' ? portalConfig.description : isSignIn ? (
                 <>
                   Don&apos;t have an account?{' '}
                   <Link
@@ -157,6 +175,14 @@ export function LoginPage() {
                 </>
               )}
             </p>
+            {portal === 'creator' && (
+              <p className="mt-2 text-sm text-gray-600">
+                New to the team?{' '}
+                <Link href="/become-a-creator" className="font-medium text-blue-600 hover:text-blue-700">
+                  Apply to become a creator
+                </Link>
+              </p>
+            )}
           </div>
 
           {errorMessage && (
@@ -274,7 +300,8 @@ export function LoginPage() {
               {isSignIn ? 'Sign In' : 'Create Account'}
             </button>
 
-            {/* Divider */}
+            {/* Customer and creator accounts may use Google. Admin access stays password-based. */}
+            {portal !== 'admin' && <>
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -305,6 +332,7 @@ export function LoginPage() {
                 Continue with Google
               </span>
             </button>
+            </>}
           </form>
         </div>
       </div>

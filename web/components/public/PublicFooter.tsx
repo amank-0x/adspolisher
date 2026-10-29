@@ -51,8 +51,8 @@ export function PublicFooter() {
             <ul className="mt-4 space-y-2.5 text-sm font-medium text-neutral-700">
               <li><Link href="/auth?mode=signin" className="hover:text-black">Customer Sign In</Link></li>
               <li><Link href="/dashboard" className="hover:text-black">Client Dashboard</Link></li>
-              <li><Link href="/creator" className="hover:text-black">Creator Workspace</Link></li>
-              <li><Link href="/admin" className="hover:text-black">Admin Console</Link></li>
+              <li><Link href="/creator/login" className="hover:text-black">Creator Sign In</Link></li>
+              <li><Link href="/admin/login" className="hover:text-black">Admin Sign In</Link></li>
             </ul>
           </div>
         </div>

@@ -36,7 +36,7 @@ type SignUpCredentials = EmailCredentials & {
 };
 
 export async function signInWithEmail(credentials: EmailCredentials) {
-  const { error } = await authClient.signIn.email({
+  const { data, error } = await authClient.signIn.email({
     email: credentials.email,
     password: credentials.password,
     rememberMe: credentials.rememberMe,
@@ -45,6 +45,8 @@ export async function signInWithEmail(credentials: EmailCredentials) {
   if (error) {
     throw new Error(error.message || "Invalid email or password.");
   }
+
+  return String(data?.user?.appRole ?? "CUSTOMER").toUpperCase();
 }
 
 export async function signUpWithEmail(credentials: SignUpCredentials) {
@@ -59,10 +61,10 @@ export async function signUpWithEmail(credentials: SignUpCredentials) {
   }
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(callbackURL = `${window.location.origin}/dashboard`) {
   const { error } = await authClient.signIn.social({
     provider: "google",
-    callbackURL: `${window.location.origin}/dashboard`,
+    callbackURL,
   });
 
   if (error) {

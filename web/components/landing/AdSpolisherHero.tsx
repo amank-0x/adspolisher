@@ -163,8 +163,9 @@ export default function AdSpolisherHero() {
             <span className="nav-progress-track" aria-hidden="true"><i style={{ width: `${scrollProgress * 100}%` }} /></span>
           </nav>
           <div className="stage-nav-actions">
+            <Link className="creator-login-prompt" href="/creator/login">Are you a creator?</Link>
             <Link className="sign-in-button" href="/auth?mode=signin">Sign In</Link>
-            <Link className="quote-button" href="/start-project">Start a Project</Link>
+            <Link className="quote-button" href="/dashboard">Dashboard</Link>
           </div>
         </header>
 
