@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from '@/lib/auth-client';
@@ -275,6 +275,65 @@ export default function CustomerDashboardPage() {
   const { data: session } = useSession();
   const firstName = session?.user?.name?.trim().split(/\s+/)[0] || 'there';
 
+  const [overview, setOverview] = useState<{
+    counts: {
+      totalRequests: number;
+      newRequests: number;
+      inReviewRequests: number;
+      proposalsReady: number;
+      completedRequests: number;
+      activeProjects: number;
+    };
+    recentRequests: any[];
+    notifications: any[];
+  } | null>(null);
+
+  useEffect(() => {
+    async function loadOverview() {
+      try {
+        const email = session?.user?.email || '';
+        const userId = session?.user?.id || '';
+        const params = new URLSearchParams();
+        if (email) params.append('email', email);
+        if (userId) params.append('userId', userId);
+        const res = await fetch(`/api/dashboard/overview?${params.toString()}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            setOverview(json.data);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load dashboard overview:', e);
+      }
+    }
+    loadOverview();
+  }, [session?.user?.email, session?.user?.id]);
+
+  const dynamicTiles = [
+    {
+      ...SUMMARY_TILES[0],
+      value: String(overview?.counts?.activeProjects ?? 2).padStart(2, '0'),
+    },
+    {
+      ...SUMMARY_TILES[1],
+      value: String(
+        (overview?.counts?.newRequests ?? 0) +
+        (overview?.counts?.inReviewRequests ?? 0) || 2
+      ).padStart(2, '0'),
+      subText: overview?.counts?.newRequests
+        ? `${overview.counts.newRequests} awaiting art director`
+        : SUMMARY_TILES[1].subText,
+    },
+    {
+      ...SUMMARY_TILES[2],
+      value: String(overview?.counts?.proposalsReady ?? 1).padStart(2, '0'),
+    },
+    {
+      ...SUMMARY_TILES[3],
+    },
+  ];
+
   return (
     <div className="space-y-8 pb-12">
       {/* 4.2 Page Header */}
@@ -392,7 +451,7 @@ export default function CustomerDashboardPage() {
 
       {/* 4.4 Interactive Summary Tiles (Frosted Glass with Chromatic Icon Badges) */}
       <section className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-        {SUMMARY_TILES.map((tile) => {
+        {dynamicTiles.map((tile) => {
           const Icon = tile.icon;
           return (
             <Link
@@ -449,6 +508,94 @@ export default function CustomerDashboardPage() {
       <div className="grid grid-cols-1 gap-7 lg:grid-cols-12 lg:gap-8 items-start">
         {/* Main Column (8 cols) */}
         <div className="space-y-7 lg:col-span-8">
+          {/* Creative Briefs & Project Requests Section (from DB) */}
+          {overview?.recentRequests && overview.recentRequests.length > 0 && (
+            <section className="overflow-hidden rounded-3xl border border-white/80 bg-white/70 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+              <div className="flex items-center justify-between border-b border-white/60 px-6 py-4 bg-white/40 backdrop-blur-md">
+                <div className="flex items-center gap-2.5">
+                  <div className="grid h-8 w-8 place-items-center rounded-xl bg-indigo-50 text-[#4F46E5]">
+                    <FileText size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-[#141413]">Your Creative Requests</h3>
+                    <p className="mt-0.5 text-xs text-[#5A5852]">
+                      Live status of your submitted briefs and custom proposals.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href="/dashboard/requests"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/80 bg-white/80 px-3.5 py-1.5 text-xs font-bold text-[#4F46E5] shadow-xs backdrop-blur-md transition hover:bg-white hover:underline"
+                >
+                  <span>View all briefs ({overview.recentRequests.length})</span>
+                  <ArrowRight size={13} />
+                </Link>
+              </div>
+
+              <div className="divide-y divide-black/[0.05]">
+                {overview.recentRequests.map((req: any) => {
+                  const att = req.attachments || {};
+                  const title =
+                    att.projectTitle ||
+                    req.message.split('\n')[0].replace(/^\[Project:\s*/, '').replace(/\]$/, '') ||
+                    'Creative Brief';
+                  const service = att.serviceNeeded || 'Paid Social & Creative Design';
+                  const isNew = req.status === 'NEW';
+                  const isAccepted = req.status === 'ACCEPTED' || req.status === 'CONVERTED';
+
+                  return (
+                    <div
+                      key={req.id}
+                      className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 transition hover:bg-white/90"
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <span
+                          className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full shadow-xs ${
+                            isNew
+                              ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.7)]'
+                              : isAccepted
+                              ? 'bg-emerald-500'
+                              : 'bg-[#D9480F]'
+                          }`}
+                        />
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="rounded-md border border-black/[0.08] bg-black/[0.04] px-2 py-0.5 text-[11px] font-mono font-bold text-neutral-700">
+                              REQ-{req.id.slice(-5).toUpperCase()}
+                            </span>
+                            <h4 className="text-sm font-bold text-[#141413]">{title}</h4>
+                            <span
+                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                                isNew
+                                  ? 'border border-blue-500/20 bg-blue-50 text-blue-700'
+                                  : isAccepted
+                                  ? 'border border-emerald-500/20 bg-emerald-50 text-emerald-700'
+                                  : 'border border-amber-500/20 bg-amber-50 text-amber-700'
+                              }`}
+                            >
+                              {isNew ? 'Intake Review' : isAccepted ? 'In Production' : req.status}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-xs text-[#5A5852]">
+                            {service} · Budget: <strong className="text-neutral-700">{req.budgetRange || 'Custom'}</strong> · Submitted {new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/dashboard/requests/${req.id}`}
+                        className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 self-start sm:self-auto rounded-xl border border-black/[0.08] bg-white px-4 text-xs font-semibold text-[#141413] shadow-xs transition hover:border-[#4F46E5]/40 hover:bg-neutral-50"
+                      >
+                        <span>View details</span>
+                        <ArrowRight size={13} />
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           {/* 4.5 Active Projects (Frosted Glass Container) */}
           <section className="overflow-hidden rounded-3xl border border-white/80 bg-white/60 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
             <div className="flex items-center justify-between border-b border-white/60 px-6 py-4 bg-white/30 backdrop-blur-md">

@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -49,27 +51,66 @@ export async function POST(req: Request) {
       type: file.type,
     }));
 
-    // Log the intake inquiry
-    console.log("[INQUIRY RECEIVED - /start-project]", {
+    const projectTitle = `${companyName} - ${serviceNeeded}`;
+    const formattedMessage = `[Project: ${projectTitle}]
+
+Service: ${serviceNeeded}
+Project Scope / Deliverables: ${projectSize}
+Content Readiness: ${contentReadiness}
+Target Timeline: ${targetTimeline}
+Referral Source: ${referralSource}
+
+${additionalNotes ? `Client Notes:\n${additionalNotes}` : "Inquiry submitted via AdsPolisher /start-project landing page."}`;
+
+    const payload = {
       name,
       email,
       companyName,
-      website,
-      referralSource,
+      companyWebsite: website || null,
+      projectTitle,
       serviceNeeded,
-      projectSize,
-      targetTimeline,
+      goals: `Timeline: ${targetTimeline} · Scope: ${projectSize} · Readiness: ${contentReadiness}`,
       budgetRange,
-      contentReadiness,
-      additionalNotesLength: additionalNotes.length,
-      filesCount: files.length,
-      fileSummaries,
-      timestamp: new Date().toISOString(),
+      message: formattedMessage,
+      source: "LANDING_PAGE",
+      attachments: {
+        projectTitle,
+        serviceNeeded,
+        projectSize,
+        targetTimeline,
+        contentReadiness,
+        referralSource,
+        fileSummaries,
+        source: "LANDING_PAGE",
+        submittedAt: new Date().toISOString(),
+      },
+    };
+
+    // Forward to Express API server to persist in Neon PostgreSQL
+    const backendRes = await fetch(`${API_BASE}/api/v1/requests`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.get("cookie") || "",
+        authorization: req.headers.get("authorization") || "",
+      },
+      body: JSON.stringify(payload),
     });
+
+    const data = await backendRes.json();
+
+    if (!backendRes.ok) {
+      console.error("[START-PROJECT DB SAVE FAILED]", data);
+      return NextResponse.json(
+        { error: data.message || "Failed to save project request" },
+        { status: backendRes.status }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Project request submitted successfully",
+      message: "Project request submitted and saved to database successfully",
+      data: data.data,
       timestamp: new Date().toISOString(),
     });
   } catch (err: unknown) {
