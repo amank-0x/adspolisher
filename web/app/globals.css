@@ -220,6 +220,21 @@ html {
     color: var(--ink);
 }
 
+/* Highlighted Request Project Link in Landing Page Navbar */
+.stage-nav .stage-nav-links a.nav-request-project {
+    background: #D9480F;
+    color: #ffffff !important;
+    border-radius: 999px;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background .2s ease, opacity .2s ease;
+}
+
+.stage-nav .stage-nav-links a.nav-request-project:hover {
+    background: #c23e0c;
+    color: #ffffff !important;
+}
+
 .nav-progress-track {
     position: absolute;
     right: 12px;

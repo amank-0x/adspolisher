@@ -149,32 +149,36 @@ export function LoginPage({ portal = 'customer' }: { portal?: AuthPortal }) {
                 AdsPolisher
               </span>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 mb-2">
               {isSignIn ? portalConfig.title : 'Create an Account'}
             </h1>
-            <p className="text-gray-600">
-              {portal !== 'customer' ? portalConfig.description : isSignIn ? (
-                <>
-                  Don&apos;t have an account?{' '}
+            {portal !== 'customer' ? (
+              <p className="text-sm text-gray-600">{portalConfig.description}</p>
+            ) : isSignIn ? (
+              <div className="mt-2.5">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200/90 bg-indigo-50/90 px-3.5 py-1 text-xs shadow-xs whitespace-nowrap">
+                  <span className="font-semibold text-indigo-950">Don&apos;t have an account?</span>
                   <Link
                     href="/auth?mode=signup"
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="font-bold text-[#4F46E5] hover:text-[#3730A3] underline transition-colors"
                   >
                     Sign up
                   </Link>
-                </>
-              ) : (
-                <>
-                  Already have an account?{' '}
+                </span>
+              </div>
+            ) : (
+              <div className="mt-2.5">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-100 px-3.5 py-1 text-xs shadow-xs whitespace-nowrap">
+                  <span className="font-semibold text-gray-800">Already have an account?</span>
                   <Link
                     href="/auth?mode=signin"
-                    className="text-blue-600 hover:text-blue-700 font-medium"
+                    className="font-bold text-[#141413] hover:text-black underline transition-colors"
                   >
                     Sign in
                   </Link>
-                </>
-              )}
-            </p>
+                </span>
+              </div>
+            )}
             {portal === 'creator' && (
               <p className="mt-2 text-sm text-gray-600">
                 New to the team?{' '}

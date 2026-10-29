@@ -155,11 +155,11 @@ export default function AdSpolisherHero() {
             />
           </a>
           <nav className={`stage-nav-links${scrollProgress > 0.02 ? " is-scrolled" : ""}`} aria-label="Primary navigation">
-            <a href="services">Services</a>
-            <a href="/work">Our Work</a>
+            <Link href="/services">Services</Link>
+            <Link href="/work">Our Work</Link>
             <a href="#pricing">Pricing</a>
             <Link href="/become-a-creator">Become a Creator</Link>
-            <Link href="/start-project">Request Project</Link>
+            <Link href="/start-project" className="nav-request-project">Request Project</Link>
             <span className="nav-progress-track" aria-hidden="true"><i style={{ width: `${scrollProgress * 100}%` }} /></span>
           </nav>
           <div className="stage-nav-actions">
