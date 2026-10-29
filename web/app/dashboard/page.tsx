@@ -304,14 +304,23 @@ export default function CustomerDashboardPage() {
           </p>
         </div>
 
-        {/* Secondary Header Action */}
-        <Link
-          href="/dashboard/requests"
-          className="inline-flex items-center gap-2 rounded-xl border border-black/[0.06] bg-white/70 px-4 py-2 text-xs font-bold text-[#4F46E5] backdrop-blur-md shadow-xs transition hover:bg-white hover:text-[#D9480F] hover:shadow-sm"
-        >
-          <span>View all requests</span>
-          <ArrowRight size={14} />
-        </Link>
+        {/* Header Actions */}
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/dashboard/requests"
+            className="inline-flex items-center gap-2 rounded-xl border border-black/[0.06] bg-white/70 px-4 py-2.5 text-xs font-bold text-neutral-700 backdrop-blur-md shadow-xs transition hover:bg-white hover:text-neutral-900 hover:shadow-sm"
+          >
+            <span>View requests</span>
+            <ArrowRight size={14} />
+          </Link>
+          <Link
+            href="/dashboard/requests/new"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-500/20 transition hover:scale-[1.02] hover:shadow-lg hover:shadow-indigo-500/30"
+          >
+            <Sparkles size={14} />
+            <span>New creative brief</span>
+          </Link>
+        </div>
       </section>
 
       {/* 4.3 Needs Your Attention Queue (Frosted Glass with Luminous Aura) */}
