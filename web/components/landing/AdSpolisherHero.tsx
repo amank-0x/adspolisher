@@ -156,7 +156,7 @@ export default function AdSpolisherHero() {
           </a>
           <nav className={`stage-nav-links${scrollProgress > 0.02 ? " is-scrolled" : ""}`} aria-label="Primary navigation">
             <a href="#services">Services</a>
-            <a href="#work">Our Work</a>
+            <a href="/work">Our Work</a>
             <a href="#pricing">Pricing</a>
             <Link href="/become-a-creator">Become a Creator</Link>
             <Link href="/start-project">Request Project</Link>

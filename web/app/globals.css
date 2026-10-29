@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-accent: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
 :root {
     --ink: #141413;
     --paper: #eceae4;
+    --font-accent: "Playfair Display", Georgia, serif;
+}
+
+.font-accent {
+  font-family: var(--font-accent);
+  font-style: italic;
 }
 
 * {
