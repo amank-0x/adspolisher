@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import ContactHero from "@/components/contact/ContactHero";
 import StartProjectForm from "@/components/contact/StartProjectForm";
 import FaqSection from "@/components/landing/FaqSection";
@@ -18,7 +19,9 @@ export default function StartProjectPage() {
       <main className="min-h-screen bg-[#FCFCFC] text-[#141413]">
         <section className="bg-[#FCFCFC] px-6 pb-24 pt-16 md:px-12">
           <ContactHero />
-          <StartProjectForm />
+          <Suspense fallback={<div className="min-h-[400px]" />}>
+            <StartProjectForm />
+          </Suspense>
         </section>
         <FaqSection hideContactLink />
       </main>

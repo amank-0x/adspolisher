@@ -107,7 +107,13 @@ const PACKAGES: PackageItem[] = [
   },
 ];
 
-export default function PricingSection() {
+export default function PricingSection({
+  heading,
+  subheading,
+}: {
+  heading?: React.ReactNode;
+  subheading?: string;
+} = {}) {
   return (
     <section
       id="pricing"
@@ -133,24 +139,30 @@ export default function PricingSection() {
           transition={{ duration: 0.65, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
           className="mx-auto max-w-[720px] text-center"
         >
-          <h2 className="text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl lg:text-6xl">
-            Choose the{" "}
-            <em
-              className="font-serif italic font-normal text-[#FDE68A]"
-              style={{
-                fontFamily:
-                  "'Playfair Display', Georgia, 'Times New Roman', serif",
-              }}
-            >
-              creative package
-            </em>
-            <br />
-            your brand needs.
-          </h2>
+          {heading ? (
+            <h2 className="text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl lg:text-6xl">
+              {heading}
+            </h2>
+          ) : (
+            <h2 className="text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl lg:text-6xl">
+              Choose the{" "}
+              <em
+                className="font-serif italic font-normal text-[#FDE68A]"
+                style={{
+                  fontFamily:
+                    "'Playfair Display', Georgia, 'Times New Roman', serif",
+                }}
+              >
+                creative package
+              </em>
+              <br />
+              your brand needs.
+            </h2>
+          )}
 
           <p className="mt-5 text-base leading-relaxed text-white/75 sm:text-lg">
-            Clear deliverables, predictable turnaround times, and defined revision
-            rounds—no hidden agency retainers.
+            {subheading ??
+              "Clear deliverables, predictable turnaround times, and defined revision rounds—no hidden agency retainers."}
           </p>
         </motion.div>
 

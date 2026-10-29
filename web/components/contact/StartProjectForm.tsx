@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { CheckCircle2, AlertCircle, X, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useSearchParams } from "next/navigation";
 
 interface FormErrors {
   name?: string;
@@ -22,6 +23,7 @@ interface FormErrors {
 export default function StartProjectForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearchParams();
 
   // Form states
   const [name, setName] = useState("");
@@ -36,6 +38,17 @@ export default function StartProjectForm() {
   const [contentReadiness, setContentReadiness] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [honeypot, setHoneypot] = useState(""); // anti-spam
+
+  useEffect(() => {
+    const emailParam = searchParams?.get("email");
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+    const serviceParam = searchParams?.get("service");
+    if (serviceParam) {
+      setServiceNeeded(serviceParam);
+    }
+  }, [searchParams]);
 
   // File upload state
   const [files, setFiles] = useState<File[]>([]);
