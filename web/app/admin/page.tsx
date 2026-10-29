@@ -1,73 +1,74 @@
-import Link from 'next/link';
+import Link from "next/link";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  BriefcaseBusiness,
+  ClipboardCheck,
+  Clock3,
+  FileClock,
+  FileText,
+  FolderKanban,
+  MessageSquareText,
+  UserRoundPlus,
+} from "lucide-react";
+
+const pipeline = [
+  { label: "New requests", value: "05", note: "Need initial review", icon: FileText, href: "/admin/requests" },
+  { label: "Need more info", value: "02", note: "Waiting on customers", icon: MessageSquareText, href: "/admin/requests" },
+  { label: "Proposals pending", value: "03", note: "Awaiting decisions", icon: FileClock, href: "/admin/requests" },
+  { label: "Active projects", value: "08", note: "Confirmed scope", icon: FolderKanban, href: "/admin/projects" },
+];
+
+const attention = [
+  { label: "Creator submissions need review", context: "3 drafts · Oldest submitted 4h ago", action: "Open review queue", href: "/admin/review", tone: "orange" },
+  { label: "Tasks are past their due date", context: "2 tasks · Across 2 projects", action: "View projects", href: "/admin/projects", tone: "red" },
+  { label: "Customer revisions requested", context: "2 projects · Scope check needed", action: "Review requests", href: "/admin/requests", tone: "neutral" },
+];
+
+const recent = [
+  ["New request received", "Northstar Outdoor · 1 hour ago"],
+  ["Proposal accepted", "Q4 Meta Campaign · Yesterday"],
+  ["Creator submitted work", "Display Retargeting · Yesterday"],
+  ["Project marked complete", "Lumen Product Launch · Oct 24"],
+];
 
 export default function AdminOverviewPage() {
   return (
-    <div className="min-h-screen bg-[#eceae4] text-[#141413] px-6 py-16 max-w-5xl mx-auto">
-      <div className="border border-dashed border-neutral-400 rounded-xl p-8 bg-white/50 backdrop-blur-xs">
-        <span className="text-xs font-mono uppercase tracking-wider text-neutral-500">Route: /admin</span>
-        <h1 className="text-3xl font-bold mt-2">Admin Overview — Blank Page</h1>
-        <p className="text-neutral-600 mt-2">
-          Agency operations dashboard for reviewing requests, active projects, and quality control.
-        </p>
+    <div className="space-y-6 pb-2">
+      <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+        <div><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#b34a20]">Operations overview</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-[36px]">Good morning, team.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">Your workflow at a glance. Start with the items that need a decision.</p></div>
+        <Link href="/admin/requests" className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-[#141413] px-4 text-sm font-semibold text-white hover:bg-neutral-700"><FileText size={16} />Open request inbox</Link>
+      </section>
 
-        <div className="mt-6 space-y-4 text-sm text-neutral-700">
-          <p className="font-semibold text-neutral-900">Key metrics &amp; queues to build on this page:</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            <div className="border border-neutral-300 rounded p-3 bg-white/60">
-              <span className="font-bold text-neutral-900">1. New Quote Requests</span>
-              <p className="text-neutral-500 mt-0.5">Incoming leads needing initial qualification.</p>
-            </div>
-            <div className="border border-neutral-300 rounded p-3 bg-white/60">
-              <span className="font-bold text-neutral-900">2. Requests Needing More Info</span>
-              <p className="text-neutral-500 mt-0.5">Awaiting customer answer or brief clarification.</p>
-            </div>
-            <div className="border border-neutral-300 rounded p-3 bg-white/60">
-              <span className="font-bold text-neutral-900">3. Proposals Awaiting Decisions</span>
-              <p className="text-neutral-500 mt-0.5">Commercial quotes sent and pending customer acceptance.</p>
-            </div>
-            <div className="border border-neutral-300 rounded p-3 bg-white/60">
-              <span className="font-bold text-neutral-900">4. Active Confirmed Projects</span>
-              <p className="text-neutral-500 mt-0.5">Live creative production currently in progress.</p>
-            </div>
-            <div className="border border-neutral-300 rounded p-3 bg-white/60">
-              <span className="font-bold text-neutral-900">5. Overdue Creator Tasks</span>
-              <p className="text-neutral-500 mt-0.5">Tasks past due date needing operational intervention.</p>
-            </div>
-            <div className="border border-neutral-300 rounded p-3 bg-white/60">
-              <span className="font-bold text-neutral-900">6. Creative Work Waiting Review</span>
-              <p className="text-neutral-500 mt-0.5">Drafts uploaded by creators pending QA before client release.</p>
-            </div>
-            <div className="border border-neutral-300 rounded p-3 bg-white/60 md:col-span-2">
-              <span className="font-bold text-neutral-900">7. New Creator Applications</span>
-              <p className="text-neutral-500 mt-0.5">Applicants awaiting review and portfolio vetting.</p>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-neutral-300">
-            <p className="font-semibold text-xs text-neutral-900 mb-2">Admin Workspace Navigation:</p>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <Link href="/admin/requests" className="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 rounded">
-                Requests (/admin/requests)
-              </Link>
-              <Link href="/admin/projects" className="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 rounded">
-                Projects (/admin/projects)
-              </Link>
-              <Link href="/admin/creator-applications" className="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 rounded">
-                Creator Applications (/admin/creator-applications)
-              </Link>
-              <Link href="/admin/team" className="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 rounded">
-                Team (/admin/team)
-              </Link>
-              <Link href="/admin/services" className="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 rounded">
-                Services (/admin/services)
-              </Link>
-              <Link href="/admin/portfolio" className="px-3 py-1.5 bg-neutral-200 hover:bg-neutral-300 rounded">
-                Portfolio (/admin/portfolio)
-              </Link>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {pipeline.map((item) => { const Icon = item.icon; return <Link href={item.href} key={item.label} className="rounded-2xl border border-black/[0.07] bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-sm sm:p-5"><div className="flex items-center justify-between"><p className="text-xs font-medium text-neutral-500">{item.label}</p><Icon size={17} className="text-neutral-400" /></div><p className="mt-4 text-3xl font-semibold tracking-[-.05em]">{item.value}</p><p className="mt-1 text-[11px] text-neutral-500">{item.note}</p></Link>; })}
       </div>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)]">
+        <section className="overflow-hidden rounded-2xl border border-black/[0.07] bg-white">
+          <div className="border-b border-black/[0.06] px-5 py-4 sm:px-6"><div className="flex items-center justify-between"><div><h3 className="text-sm font-semibold">Needs attention</h3><p className="mt-1 text-xs text-neutral-500">Prioritized work for the operations team.</p></div><span className="rounded-full bg-[#f8e9de] px-2.5 py-1 text-[10px] font-semibold text-[#9d421b]">7 items</span></div></div>
+          <div className="divide-y divide-black/[0.06]">
+            {attention.map((item) => <div key={item.label} className="flex flex-col justify-between gap-3 p-5 sm:flex-row sm:items-center sm:px-6"><div className="flex items-start gap-3"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.tone === "red" ? "bg-red-500" : item.tone === "orange" ? "bg-[#d9480f]" : "bg-neutral-400"}`} /><div><p className="text-sm font-semibold">{item.label}</p><p className="mt-1 text-xs text-neutral-500">{item.context}</p></div></div><Link href={item.href} className="inline-flex items-center gap-1 self-start text-xs font-semibold text-neutral-600 hover:text-black sm:self-center">{item.action}<ArrowRight size={14} /></Link></div>)}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-6">
+          <div className="flex items-start justify-between"><div><h3 className="text-sm font-semibold">Creator recruitment</h3><p className="mt-1 text-xs text-neutral-500">Application pipeline</p></div><UserRoundPlus size={18} className="text-neutral-400" /></div>
+          <div className="mt-5 grid grid-cols-3 divide-x divide-black/[0.07] rounded-xl bg-[#f8f7f3] py-3">
+            {[ ["02", "New"], ["03", "Shortlisted"], ["01", "Onboarding"] ].map(([value, label]) => <div key={label} className="px-2 text-center"><p className="text-xl font-semibold tracking-tight">{value}</p><p className="mt-1 text-[10px] text-neutral-500">{label}</p></div>)}
+          </div>
+          <Link href="/admin/creator-applications" className="mt-4 flex items-center justify-between rounded-xl border border-black/[0.07] px-3.5 py-3 text-xs font-semibold transition hover:bg-neutral-50"><span className="flex items-center gap-2"><BriefcaseBusiness size={15} className="text-neutral-500" />Review applications</span><ArrowUpRight size={15} className="text-neutral-400" /></Link>
+          <Link href="/admin/team" className="mt-2 flex items-center justify-between rounded-xl border border-black/[0.07] px-3.5 py-3 text-xs font-semibold transition hover:bg-neutral-50"><span className="flex items-center gap-2"><UserRoundPlus size={15} className="text-neutral-500" />Manage team access</span><ArrowUpRight size={15} className="text-neutral-400" /></Link>
+        </section>
+      </div>
+
+      <section className="rounded-2xl border border-black/[0.07] bg-white">
+        <div className="flex items-center justify-between border-b border-black/[0.06] px-5 py-4 sm:px-6"><div><h3 className="text-sm font-semibold">Recent activity</h3><p className="mt-1 text-xs text-neutral-500">Recent changes across requests, projects, and recruiting.</p></div><Clock3 size={17} className="text-neutral-400" /></div>
+        <div className="grid divide-y divide-black/[0.06] sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
+          {recent.map(([title, detail]) => <div key={title} className="flex items-start gap-3 px-5 py-4 sm:px-6"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-neutral-300" /><div><p className="text-xs font-medium">{title}</p><p className="mt-1 text-[11px] text-neutral-500">{detail}</p></div></div>)}
+        </div>
+      </section>
+      <p className="text-[11px] text-neutral-400">Pipeline numbers are sample figures for this dashboard preview.</p>
     </div>
   );
 }

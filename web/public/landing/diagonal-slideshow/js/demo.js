@@ -132,9 +132,9 @@
             */
             this.transforms = [
                 {x: -1*(winsize.width/2+this.width), y: -1*(winsize.height/2+this.height), rotation: -30},
-                {x: -1*(winsize.width/2-this.width/3), y: -1*(winsize.height/2-this.height/3), rotation: 0},
+                {x: -1*(winsize.width/2-this.width/3), y: -1*(winsize.height*0.10), rotation: 0},
                 {x: 0, y: 0, rotation: 0},
-                {x: winsize.width/2-this.width/3, y: winsize.height/2-this.height/3, rotation: 0},
+                {x: winsize.width/2-this.width/3, y: winsize.height*0.10, rotation: 0},
                 {x: winsize.width/2+this.width, y: winsize.height/2+this.height, rotation: 30},
                 {x: -1*(winsize.width/2 - this.width/2 - winsize.width*0.075), y: 0, rotation: 0}
             ];

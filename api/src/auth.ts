@@ -19,6 +19,15 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  account: {
+    accountLinking: {
+      enabled: true,
+      // Email/password signups are not verified by email in this app. Allow
+      // linking only when Google itself confirms ownership of the same email.
+      // Better Auth still rejects unverified Google identities by default.
+      requireLocalEmailVerified: false,
+    },
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,

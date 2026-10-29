@@ -1978,3 +1978,90 @@ html {
     }
     .right-hero-eyebrow { font-size: 8px; }
 }
+
+/* ── Section 05: Creative Showcase & Portfolio ── */
+.creative-showcase-section {
+    position: relative;
+    width: 100%;
+    background: #f7f5f0;
+    color: var(--ink);
+    padding: clamp(64px, 7vw, 96px) 0 clamp(80px, 10vw, 140px);
+    overflow: hidden;
+}
+
+.creative-showcase-container {
+    width: min(1380px, calc(100% - 48px));
+    margin: 0 auto;
+}
+
+.creative-showcase-header {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(20, 20, 19, 0.10);
+}
+
+@media (min-width: 1024px) {
+    .creative-showcase-header {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 48px;
+    }
+}
+
+.creative-showcase-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.6875rem; /* 11px */
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #d9480f;
+    margin-bottom: 16px;
+}
+
+.creative-showcase-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: #d9480f;
+    flex-shrink: 0;
+}
+
+.creative-showcase-headline {
+    margin: 0;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+}
+
+.creative-showcase-headline-plain {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: clamp(30px, 3.8vw, 48px);
+    font-weight: 700;
+    color: #141413;
+    display: inline;
+}
+
+.creative-showcase-headline-accent {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-size: clamp(30px, 3.8vw, 48px);
+    font-style: italic;
+    font-weight: 400;
+    color: #d9480f;
+    display: inline;
+    margin-left: 0.25em;
+}
+
+.creative-showcase-iframe {
+    display: block;
+    width: 100%;
+    height: clamp(760px, 90vh, 960px);
+    border: 0;
+    margin-top: clamp(36px, 4vw, 56px);
+    background: #f7f5f0;
+}
