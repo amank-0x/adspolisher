@@ -8,6 +8,8 @@ import {
   ClipboardCheck,
   Clock3,
   MessageSquareText,
+  Sparkles,
+  Flame,
 } from "lucide-react";
 
 const tasks = [
@@ -17,38 +19,183 @@ const tasks = [
 ];
 
 const counts = [
-  { label: "Assigned tasks", value: "06", note: "Across 4 projects", icon: ClipboardCheck },
-  { label: "Due soon", value: "02", note: "Next 48 hours", icon: CalendarClock },
-  { label: "Revisions requested", value: "01", note: "Feedback is ready", icon: CircleAlert },
-  { label: "Completed", value: "12", note: "This month", icon: CheckCircle2 },
+  { label: "Assigned tasks", value: "06", note: "Across 4 projects", icon: ClipboardCheck, color: "indigo" },
+  { label: "Due soon", value: "02", note: "Next 48 hours", icon: CalendarClock, color: "amber" },
+  { label: "Revisions requested", value: "01", note: "Feedback is ready", icon: CircleAlert, color: "rose" },
+  { label: "Completed", value: "12", note: "This month", icon: CheckCircle2, color: "emerald" },
 ];
 
 export default function CreatorDashboardPage() {
   return (
-    <div className="space-y-6 pb-2">
+    <div className="space-y-8 pb-12">
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-        <div><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#b34a20]">Creator workspace</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-[36px]">Your work, in focus.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">See your priorities, deadlines, and the feedback needed for your next submission.</p></div>
-        <Link href="/creator/tasks" className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-[#141413] px-4 text-sm font-semibold text-white hover:bg-neutral-700"><ClipboardCheck size={16} />Open my tasks</Link>
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-black/[0.06] bg-white/70 px-3 py-1 text-xs font-semibold text-neutral-600 backdrop-blur-md shadow-xs mb-3">
+            <Sparkles size={13} className="text-[#4F46E5]" />
+            <span>Creator Studio Workspace</span>
+          </div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-[#141413] sm:text-4xl">
+            Your work, in focus.
+          </h2>
+          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[#5A5852]">
+            Review your active sprint tasks, upcoming pod deadlines, and client iteration requests.
+          </p>
+        </div>
+        <Link
+          href="/creator/tasks"
+          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-gradient-to-r from-[#141413] to-[#2B2927] px-5 text-xs font-bold text-white shadow-md transition hover:scale-[1.02] hover:from-neutral-900 hover:to-neutral-800"
+        >
+          <ClipboardCheck size={16} />
+          <span>Open my tasks</span>
+        </Link>
       </section>
 
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {counts.map((item) => { const Icon = item.icon; return <article key={item.label} className="rounded-2xl border border-black/[0.07] bg-white p-4 sm:p-5"><div className="flex items-center justify-between gap-2"><p className="text-xs font-medium text-neutral-500">{item.label}</p><Icon size={17} className="text-neutral-400" /></div><p className="mt-4 text-3xl font-semibold tracking-[-.05em]">{item.value}</p><p className="mt-1 text-[11px] text-neutral-500">{item.note}</p></article>; })}
+      {/* Metric Tiles */}
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+        {counts.map((item) => {
+          const Icon = item.icon;
+          return (
+            <article
+              key={item.label}
+              className="group relative overflow-hidden rounded-2xl border border-white/80 bg-white/75 backdrop-blur-xl p-5 shadow-[0_4px_20px_rgba(20,20,19,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:bg-white"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  {item.label}
+                </p>
+                <span
+                  className={`grid h-8 w-8 place-items-center rounded-xl shadow-xs ${
+                    item.color === 'indigo'
+                      ? 'bg-[#EEF2FF] text-[#4F46E5]'
+                      : item.color === 'amber'
+                      ? 'bg-[#FFFBEB] text-[#D97706]'
+                      : item.color === 'rose'
+                      ? 'bg-[#FFF1F2] text-[#E11D48]'
+                      : 'bg-[#ECFDF5] text-[#059669]'
+                  }`}
+                >
+                  <Icon size={16} />
+                </span>
+              </div>
+              <p className="mt-4 text-3xl font-extrabold tracking-tight tabular-nums text-[#141413]">
+                {item.value}
+              </p>
+              <p className="mt-1 text-xs text-[#5A5852]">{item.note}</p>
+            </article>
+          );
+        })}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(290px,.7fr)]">
-        <section className="overflow-hidden rounded-2xl border border-black/[0.07] bg-white">
-          <div className="flex items-center justify-between gap-3 border-b border-black/[0.06] px-5 py-4 sm:px-6"><div><h3 className="text-sm font-semibold">Priority tasks</h3><p className="mt-1 text-xs text-neutral-500">Your nearest deadlines and next actions.</p></div><Link href="/creator/tasks" className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-600 hover:text-black">All tasks<ArrowRight size={13} /></Link></div>
-          <div className="divide-y divide-black/[0.06]">
-            {tasks.map((task) => <Link key={task.id} href={`/creator/tasks/${task.id}`} className="block p-5 transition hover:bg-[#faf9f6] sm:px-6"><div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h4 className="text-sm font-semibold">{task.title}</h4>{task.priority === "High" && <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">High priority</span>}</div><p className="mt-1 text-xs text-neutral-500">{task.project}</p></div><span className={`inline-flex items-center self-start rounded-full px-2.5 py-1 text-[10px] font-semibold ${task.status === "Changes requested" ? "bg-[#fff2e7] text-[#a3481c]" : task.status === "Submitted for review" ? "bg-emerald-50 text-emerald-800" : "bg-neutral-100 text-neutral-700"}`}>{task.status}</span></div><div className="mt-4 flex items-center gap-3"><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-100"><div className="h-full rounded-full bg-[#141413]" style={{ width: `${task.progress}%` }} /></div><span className="w-28 text-right text-[10px] text-neutral-500">Due {task.due}</span></div></Link>)}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(290px,.7fr)]">
+        {/* Priority Tasks */}
+        <section className="overflow-hidden rounded-3xl border border-white/80 bg-white/75 backdrop-blur-xl shadow-[0_8px_30px_rgba(20,20,19,0.04)]">
+          <div className="flex items-center justify-between gap-3 border-b border-black/[0.06] px-6 py-4 bg-white/50 backdrop-blur-md">
+            <div>
+              <h3 className="text-base font-bold text-[#141413]">Priority tasks</h3>
+              <p className="mt-0.5 text-xs text-[#5A5852]">Your nearest sprint deadlines and next deliverables.</p>
+            </div>
+            <Link
+              href="/creator/tasks"
+              className="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:underline"
+            >
+              All tasks <ArrowRight size={13} />
+            </Link>
+          </div>
+          <div className="divide-y divide-black/[0.05]">
+            {tasks.map((task) => (
+              <Link
+                key={task.id}
+                href={`/creator/tasks/${task.id}`}
+                className="block p-5 sm:px-6 transition hover:bg-white/90"
+              >
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="text-sm font-bold text-[#141413] hover:text-[#4F46E5] transition-colors">
+                        {task.title}
+                      </h4>
+                      {task.priority === "High" && (
+                        <span className="rounded-md border border-red-500/20 bg-red-50 px-2 py-0.5 text-[10px] font-bold text-red-700">
+                          High priority
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-[#5A5852]">{task.project}</p>
+                  </div>
+                  <span
+                    className={`inline-flex items-center self-start rounded-full px-2.5 py-1 text-[11px] font-bold shadow-xs ${
+                      task.status === "Changes requested"
+                        ? "border border-[#D9480F]/20 bg-[#D9480F]/10 text-[#D9480F]"
+                        : task.status === "Submitted for review"
+                        ? "border border-emerald-500/20 bg-emerald-50 text-emerald-800"
+                        : "border border-black/[0.06] bg-black/[0.03] text-neutral-700"
+                    }`}
+                  >
+                    {task.status}
+                  </span>
+                </div>
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/[0.06]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#141413] to-[#4F46E5]"
+                      style={{ width: `${task.progress}%` }}
+                    />
+                  </div>
+                  <span className="w-32 text-right text-xs font-semibold text-neutral-500">
+                    Due {task.due}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
 
-        <div className="space-y-5">
-          <section className="rounded-2xl border border-[#d9480f]/20 bg-[#fffaf5] p-5 sm:p-6"><div className="flex items-start gap-3"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#f5e5d8] text-[#a43e13]"><MessageSquareText size={17} /></span><div><h3 className="text-sm font-semibold">Latest feedback</h3><p className="mt-1 text-[11px] text-neutral-500">Lumen Product Launch · 30 min ago</p></div></div><p className="mt-4 text-xs leading-5 text-neutral-700">“Please strengthen the first-frame product contrast and submit one alternate headline treatment.”</p><Link href="/creator/tasks/task-302" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[#9d421b] hover:underline">Open task feedback<ArrowUpRight size={13} /></Link></section>
-          <section className="rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-6"><div className="flex items-center gap-2"><Clock3 size={17} className="text-neutral-400" /><h3 className="text-sm font-semibold">Upcoming deadlines</h3></div><div className="mt-4 space-y-3"><div className="flex items-center justify-between gap-3 text-xs"><span className="truncate text-neutral-700">Paid social hooks</span><span className="shrink-0 font-medium text-[#a3481c]">Today, 4 PM</span></div><div className="flex items-center justify-between gap-3 text-xs"><span className="truncate text-neutral-700">Product carousel</span><span className="shrink-0 text-neutral-500">Tomorrow</span></div><div className="flex items-center justify-between gap-3 text-xs"><span className="truncate text-neutral-700">Display variations</span><span className="shrink-0 text-neutral-500">Oct 31</span></div></div></section>
+        {/* Right Rail */}
+        <div className="space-y-6">
+          <section className="relative overflow-hidden rounded-3xl border border-white/80 bg-white/75 backdrop-blur-xl p-6 shadow-[0_8px_30px_rgba(20,20,19,0.04)]">
+            <div className="flex items-start gap-3.5">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-[#F5E5D8] text-[#A43E13] shadow-xs">
+                <MessageSquareText size={18} />
+              </span>
+              <div>
+                <h3 className="text-sm font-bold text-[#141413]">Latest client feedback</h3>
+                <p className="mt-0.5 text-[11px] text-neutral-500">Lumen Product Launch · 30 min ago</p>
+              </div>
+            </div>
+            <p className="mt-3.5 text-xs leading-relaxed text-neutral-700 bg-[#FAF9F5] p-3 rounded-xl border border-black/[0.04]">
+              &ldquo;Please strengthen the first-frame product contrast and submit one alternate headline treatment.&rdquo;
+            </p>
+            <Link
+              href="/creator/tasks/task-302"
+              className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#D9480F] hover:underline"
+            >
+              <span>Open task feedback</span>
+              <ArrowUpRight size={13} />
+            </Link>
+          </section>
+
+          <section className="rounded-3xl border border-white/80 bg-white/75 backdrop-blur-xl p-6 shadow-[0_8px_30px_rgba(20,20,19,0.04)]">
+            <div className="flex items-center gap-2 border-b border-black/[0.06] pb-3.5">
+              <Clock3 size={16} className="text-[#4F46E5]" />
+              <h3 className="text-sm font-bold text-[#141413]">Upcoming pod deadlines</h3>
+            </div>
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <span className="font-semibold text-neutral-800">Paid social hooks</span>
+                <span className="font-bold text-[#D9480F]">Today, 4 PM</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <span className="font-semibold text-neutral-800">Product carousel</span>
+                <span className="text-neutral-500">Tomorrow</span>
+              </div>
+              <div className="flex items-center justify-between gap-3 text-xs">
+                <span className="font-semibold text-neutral-800">Display variations</span>
+                <span className="text-neutral-500">Oct 31</span>
+              </div>
+            </div>
+          </section>
         </div>
       </div>
-      <p className="text-[11px] text-neutral-400">Task names, feedback, and dates shown here are sample workspace data.</p>
     </div>
   );
 }

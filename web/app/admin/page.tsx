@@ -10,13 +10,15 @@ import {
   FolderKanban,
   MessageSquareText,
   UserRoundPlus,
+  Sparkles,
+  Flame,
 } from "lucide-react";
 
 const pipeline = [
-  { label: "New requests", value: "05", note: "Need initial review", icon: FileText, href: "/admin/requests" },
-  { label: "Need more info", value: "02", note: "Waiting on customers", icon: MessageSquareText, href: "/admin/requests" },
-  { label: "Proposals pending", value: "03", note: "Awaiting decisions", icon: FileClock, href: "/admin/requests" },
-  { label: "Active projects", value: "08", note: "Confirmed scope", icon: FolderKanban, href: "/admin/projects" },
+  { label: "New requests", value: "05", note: "Need initial review", icon: FileText, href: "/admin/requests", color: "indigo" },
+  { label: "Need more info", value: "02", note: "Waiting on customers", icon: MessageSquareText, href: "/admin/requests", color: "cyan" },
+  { label: "Proposals pending", value: "03", note: "Awaiting decisions", icon: FileClock, href: "/admin/requests", color: "amber" },
+  { label: "Active projects", value: "08", note: "Confirmed scope", icon: FolderKanban, href: "/admin/projects", color: "emerald" },
 ];
 
 const attention = [
@@ -34,41 +36,168 @@ const recent = [
 
 export default function AdminOverviewPage() {
   return (
-    <div className="space-y-6 pb-2">
+    <div className="space-y-8 pb-12">
       <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-        <div><p className="text-[11px] font-semibold uppercase tracking-[.16em] text-[#b34a20]">Operations overview</p><h2 className="mt-2 text-3xl font-semibold tracking-[-.045em] sm:text-[36px]">Good morning, team.</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-500">Your workflow at a glance. Start with the items that need a decision.</p></div>
-        <Link href="/admin/requests" className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-[#141413] px-4 text-sm font-semibold text-white hover:bg-neutral-700"><FileText size={16} />Open request inbox</Link>
-      </section>
-
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {pipeline.map((item) => { const Icon = item.icon; return <Link href={item.href} key={item.label} className="rounded-2xl border border-black/[0.07] bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-sm sm:p-5"><div className="flex items-center justify-between"><p className="text-xs font-medium text-neutral-500">{item.label}</p><Icon size={17} className="text-neutral-400" /></div><p className="mt-4 text-3xl font-semibold tracking-[-.05em]">{item.value}</p><p className="mt-1 text-[11px] text-neutral-500">{item.note}</p></Link>; })}
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)]">
-        <section className="overflow-hidden rounded-2xl border border-black/[0.07] bg-white">
-          <div className="border-b border-black/[0.06] px-5 py-4 sm:px-6"><div className="flex items-center justify-between"><div><h3 className="text-sm font-semibold">Needs attention</h3><p className="mt-1 text-xs text-neutral-500">Prioritized work for the operations team.</p></div><span className="rounded-full bg-[#f8e9de] px-2.5 py-1 text-[10px] font-semibold text-[#9d421b]">7 items</span></div></div>
-          <div className="divide-y divide-black/[0.06]">
-            {attention.map((item) => <div key={item.label} className="flex flex-col justify-between gap-3 p-5 sm:flex-row sm:items-center sm:px-6"><div className="flex items-start gap-3"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.tone === "red" ? "bg-red-500" : item.tone === "orange" ? "bg-[#d9480f]" : "bg-neutral-400"}`} /><div><p className="text-sm font-semibold">{item.label}</p><p className="mt-1 text-xs text-neutral-500">{item.context}</p></div></div><Link href={item.href} className="inline-flex items-center gap-1 self-start text-xs font-semibold text-neutral-600 hover:text-black sm:self-center">{item.action}<ArrowRight size={14} /></Link></div>)}
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-black/[0.06] bg-white/70 px-3 py-1 text-xs font-semibold text-neutral-600 backdrop-blur-md shadow-xs mb-3">
+            <Sparkles size={13} className="text-[#4F46E5]" />
+            <span>Studio Operations Command</span>
           </div>
-        </section>
-
-        <section className="rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-6">
-          <div className="flex items-start justify-between"><div><h3 className="text-sm font-semibold">Creator recruitment</h3><p className="mt-1 text-xs text-neutral-500">Application pipeline</p></div><UserRoundPlus size={18} className="text-neutral-400" /></div>
-          <div className="mt-5 grid grid-cols-3 divide-x divide-black/[0.07] rounded-xl bg-[#f8f7f3] py-3">
-            {[ ["02", "New"], ["03", "Shortlisted"], ["01", "Onboarding"] ].map(([value, label]) => <div key={label} className="px-2 text-center"><p className="text-xl font-semibold tracking-tight">{value}</p><p className="mt-1 text-[10px] text-neutral-500">{label}</p></div>)}
-          </div>
-          <Link href="/admin/creator-applications" className="mt-4 flex items-center justify-between rounded-xl border border-black/[0.07] px-3.5 py-3 text-xs font-semibold transition hover:bg-neutral-50"><span className="flex items-center gap-2"><BriefcaseBusiness size={15} className="text-neutral-500" />Review applications</span><ArrowUpRight size={15} className="text-neutral-400" /></Link>
-          <Link href="/admin/team" className="mt-2 flex items-center justify-between rounded-xl border border-black/[0.07] px-3.5 py-3 text-xs font-semibold transition hover:bg-neutral-50"><span className="flex items-center gap-2"><UserRoundPlus size={15} className="text-neutral-500" />Manage team access</span><ArrowUpRight size={15} className="text-neutral-400" /></Link>
-        </section>
-      </div>
-
-      <section className="rounded-2xl border border-black/[0.07] bg-white">
-        <div className="flex items-center justify-between border-b border-black/[0.06] px-5 py-4 sm:px-6"><div><h3 className="text-sm font-semibold">Recent activity</h3><p className="mt-1 text-xs text-neutral-500">Recent changes across requests, projects, and recruiting.</p></div><Clock3 size={17} className="text-neutral-400" /></div>
-        <div className="grid divide-y divide-black/[0.06] sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
-          {recent.map(([title, detail]) => <div key={title} className="flex items-start gap-3 px-5 py-4 sm:px-6"><span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-neutral-300" /><div><p className="text-xs font-medium">{title}</p><p className="mt-1 text-[11px] text-neutral-500">{detail}</p></div></div>)}
+          <h2 className="text-3xl font-extrabold tracking-tight text-[#141413] sm:text-4xl">
+            Good morning, team.
+          </h2>
+          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-[#5A5852]">
+            Studio workflow at a glance. Review creator submissions, clear customer blockers, and assign new briefs.
+          </p>
         </div>
+        <Link
+          href="/admin/requests"
+          className="inline-flex h-11 items-center justify-center gap-2 self-start rounded-xl bg-gradient-to-r from-[#141413] to-[#2B2927] px-5 text-xs font-bold text-white shadow-md transition hover:scale-[1.02] hover:from-neutral-900 hover:to-neutral-800"
+        >
+          <FileText size={16} />
+          <span>Open request inbox</span>
+        </Link>
       </section>
-      <p className="text-[11px] text-neutral-400">Pipeline numbers are sample figures for this dashboard preview.</p>
+
+      {/* Metric Tiles */}
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+        {pipeline.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              href={item.href}
+              key={item.label}
+              className="group relative overflow-hidden rounded-2xl border border-white/80 bg-white/75 backdrop-blur-xl p-5 shadow-[0_4px_20px_rgba(20,20,19,0.03)] transition-all duration-300 hover:-translate-y-1 hover:shadow-md hover:bg-white"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+                  {item.label}
+                </p>
+                <span
+                  className={`grid h-8 w-8 place-items-center rounded-xl shadow-xs ${
+                    item.color === 'indigo'
+                      ? 'bg-[#EEF2FF] text-[#4F46E5]'
+                      : item.color === 'cyan'
+                      ? 'bg-[#ECFEFF] text-[#0891B2]'
+                      : item.color === 'amber'
+                      ? 'bg-[#FFFBEB] text-[#D97706]'
+                      : 'bg-[#ECFDF5] text-[#059669]'
+                  }`}
+                >
+                  <Icon size={16} />
+                </span>
+              </div>
+              <p className="mt-4 text-3xl font-extrabold tracking-tight tabular-nums text-[#141413]">
+                {item.value}
+              </p>
+              <p className="mt-1 text-xs text-[#5A5852]">{item.note}</p>
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)]">
+        {/* Needs Attention */}
+        <section className="overflow-hidden rounded-3xl border border-white/80 bg-white/75 backdrop-blur-xl shadow-[0_8px_30px_rgba(20,20,19,0.04)]">
+          <div className="border-b border-black/[0.06] px-6 py-4 bg-white/50 backdrop-blur-md">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-[#141413]">Needs attention</h3>
+                <p className="mt-0.5 text-xs text-[#5A5852]">Prioritized queue for the studio ops team.</p>
+              </div>
+              <span className="rounded-full border border-[#D9480F]/20 bg-[#D9480F]/10 px-3 py-1 text-xs font-bold text-[#D9480F]">
+                7 items
+              </span>
+            </div>
+          </div>
+          <div className="divide-y divide-black/[0.05]">
+            {attention.map((item) => (
+              <div
+                key={item.label}
+                className="flex flex-col justify-between gap-3 p-5 sm:flex-row sm:items-center sm:px-6 transition hover:bg-white/90"
+              >
+                <div className="flex items-start gap-3.5">
+                  <span
+                    className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full shadow-xs ${
+                      item.tone === "red"
+                        ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"
+                        : item.tone === "orange"
+                        ? "bg-[#D9480F] shadow-[0_0_8px_rgba(217,72,15,0.6)]"
+                        : "bg-neutral-400"
+                    }`}
+                  />
+                  <div>
+                    <p className="text-sm font-bold text-[#141413]">{item.label}</p>
+                    <p className="mt-0.5 text-xs text-[#5A5852]">{item.context}</p>
+                  </div>
+                </div>
+                <Link
+                  href={item.href}
+                  className="inline-flex items-center gap-1.5 self-start rounded-xl border border-black/[0.08] bg-white px-3.5 py-1.5 text-xs font-bold text-[#141413] shadow-xs transition hover:border-[#4F46E5]/40 hover:bg-neutral-50 sm:self-center"
+                >
+                  <span>{item.action}</span>
+                  <ArrowRight size={13} />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Creator Recruitment & Recent Feed */}
+        <div className="space-y-6">
+          <section className="rounded-3xl border border-white/80 bg-white/75 backdrop-blur-xl p-6 shadow-[0_8px_30px_rgba(20,20,19,0.04)]">
+            <div className="flex items-start justify-between border-b border-black/[0.06] pb-3.5">
+              <div>
+                <h3 className="text-sm font-bold text-[#141413]">Creator Recruitment</h3>
+                <p className="mt-0.5 text-[11px] text-neutral-500">Talent pipeline</p>
+              </div>
+              <UserRoundPlus size={18} className="text-[#4F46E5]" />
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 divide-x divide-black/[0.07] rounded-2xl border border-black/[0.06] bg-white/60 py-3 shadow-xs">
+              {[
+                ["02", "New"],
+                ["03", "Shortlisted"],
+                ["01", "Onboarding"],
+              ].map(([value, label]) => (
+                <div key={label} className="px-2 text-center">
+                  <p className="text-xl font-extrabold tracking-tight tabular-nums text-[#141413]">
+                    {value}
+                  </p>
+                  <p className="mt-0.5 text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <Link
+              href="/admin/creator-applications"
+              className="mt-4 flex items-center justify-between rounded-xl border border-black/[0.06] bg-white/80 px-4 py-2.5 text-xs font-bold text-[#4F46E5] shadow-xs backdrop-blur-md transition hover:bg-white hover:underline"
+            >
+              <span className="flex items-center gap-2">
+                <BriefcaseBusiness size={15} /> Review applications
+              </span>
+              <ArrowUpRight size={14} />
+            </Link>
+          </section>
+
+          <section className="rounded-3xl border border-white/80 bg-white/75 backdrop-blur-xl p-6 shadow-[0_8px_30px_rgba(20,20,19,0.04)]">
+            <div className="flex items-center gap-2 border-b border-black/[0.06] pb-3.5">
+              <Clock3 size={16} className="text-[#4F46E5]" />
+              <h3 className="text-sm font-bold text-[#141413]">Recent ops events</h3>
+            </div>
+            <div className="mt-4 space-y-3">
+              {recent.map(([title, subtitle]) => (
+                <div key={title} className="flex items-center justify-between gap-3 text-xs">
+                  <span className="font-semibold text-neutral-800 truncate">{title}</span>
+                  <span className="text-neutral-500 shrink-0 text-[11px]">{subtitle}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   );
 }
