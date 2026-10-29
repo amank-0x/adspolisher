@@ -7,8 +7,22 @@ if (!connectionString) {
     throw new Error("DATABASE_URL is required in .env");
 }
 
-const adapter = new PrismaNeon({ connectionString });
-const prismaClient = new PrismaClient({ adapter });
+// global declaration
+declare global {
+    var prismaGlobal: PrismaClient | undefined;
+}
+
+// for serverless enviroment
+const getPrismaClient = () => {
+    const adapter = new PrismaNeon({ connectionString });
+    return new PrismaClient({ adapter });
+};
+
+const prismaClient = globalThis.prismaGlobal ?? getPrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+    globalThis.prismaGlobal = prismaClient;
+}
 
 const isTransientDatabaseError = (error: unknown) => {
     if (!error || typeof error !== "object") return false;

@@ -4,6 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build": "tsc",
+    "vercel-build": "prisma generate && tsc",
     "dev": "bun run ./src/server.ts",
     "seed": "bunx prisma db execute --file prisma/demo-reports.sql"
   },

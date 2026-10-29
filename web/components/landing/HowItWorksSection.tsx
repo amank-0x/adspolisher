@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Users, ClipboardCheck, Sparkles, ArrowRight } from "lucide-react";
+import { motion } from "motion/react";
 
 type ZigzagRow = {
   titleBefore: string;
@@ -58,8 +59,12 @@ export default function HowItWorksSection() {
         {/* ── PART A: ALTERNATING ZIG-ZAG FEATURE ROWS ── */}
         <div className="space-y-24 lg:space-y-32">
           {ZIGZAG_ROWS.map((row) => (
-            <div
+            <motion.div
               key={row.image}
+              initial={{ opacity: 0, y: 32 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-70px" }}
+              transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16"
             >
               {/* Text Column */}
@@ -105,14 +110,20 @@ export default function HowItWorksSection() {
                   />
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* ── PART B: WORKFLOW & PROCESS CARDS ("Why Brands Switch") ── */}
         <div className="mt-28 lg:mt-36">
           {/* Split Header with why-switching-art */}
-          <div className="grid grid-cols-1 items-end gap-8 lg:grid-cols-12 mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.65, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="grid grid-cols-1 items-end gap-8 lg:grid-cols-12 mb-12"
+          >
             <div className="lg:col-span-5 pb-4">
               <div className="inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[#D9480F]">
                 <span
@@ -149,12 +160,37 @@ export default function HowItWorksSection() {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* 3-Column Bento Cards Grid */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  delayChildren: 0.25,
+                  staggerChildren: 0.15,
+                },
+              },
+            }}
+            className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8"
+          >
             {/* Card 1: Vetted Creative Specialists */}
-            <div className="flex min-h-[460px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#EFECE6] p-8 pb-0 border border-black/[0.04] transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 26 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              className="flex min-h-[460px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#EFECE6] p-8 pb-0 border border-black/[0.04] transition-shadow duration-300 hover:shadow-md"
+            >
               <div>
                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl border-[1.75px] border-[#141413] bg-[#EDE9FE] text-[#6D28D9]">
                   <Users size={20} strokeWidth={2.2} />
@@ -177,10 +213,21 @@ export default function HowItWorksSection() {
                   className="object-contain object-bottom"
                 />
               </div>
-            </div>
+            </motion.div>
 
             {/* Card 2: Streamlined Project & Revision Tracking */}
-            <div className="flex min-h-[460px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#EFECE6] p-8 pb-0 border border-black/[0.04] transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 26 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              className="flex min-h-[460px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#EFECE6] p-8 pb-0 border border-black/[0.04] transition-shadow duration-300 hover:shadow-md"
+            >
               <div>
                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl border-[1.75px] border-[#141413] bg-[#FCE7F3] text-[#BE185D]">
                   <ClipboardCheck size={20} strokeWidth={2.2} />
@@ -203,10 +250,21 @@ export default function HowItWorksSection() {
                   className="object-contain object-bottom"
                 />
               </div>
-            </div>
+            </motion.div>
 
             {/* Card 3: AI-Accelerated Speed & Output */}
-            <div className="flex min-h-[460px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#EFECE6] p-8 border border-black/[0.04] transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 26 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              className="flex min-h-[460px] flex-col justify-between overflow-hidden rounded-[24px] bg-[#EFECE6] p-8 border border-black/[0.04] transition-shadow duration-300 hover:shadow-md"
+            >
               <div>
                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl border-[1.75px] border-[#141413] bg-[#CCFBF1] text-[#0F766E]">
                   <Sparkles size={20} strokeWidth={2.2} />
@@ -250,8 +308,8 @@ export default function HowItWorksSection() {
                   Start your project <ArrowRight size={14} />
                 </Link>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
+import Link from "next/link";
 import type { CSSProperties } from "react";
+import { motion } from "motion/react";
 
 type Service = {
   id: "creative" | "copywriting" | "audit" | "strategy" | "motion" | "landing";
@@ -59,14 +63,14 @@ const SERVICES: Service[] = [
   },
   {
     id: "motion",
-    titlePlain: "Motion Graphics &",
+    titlePlain: "Motion &",
     titleSerif: "Video Ads",
     description:
-      "Short-form motion and video ad variations built to catch attention across Reels, TikTok, YouTube and paid social.",
-    accent: "#BE185D",
-    tone: "#F7F0F3",
-    image: "/landing/services/advertisement.png",
-    imageAlt: "Promotional campaign artwork for motion ad concepts",
+      "Engaging 9:16 and 4:5 motion clips built around strong first-three-second hooks for Meta, TikTok and YouTube.",
+    accent: "#EA580C",
+    tone: "#FFF7ED",
+    image: "/landing/services/motion-graphics.mp4",
+    imageAlt: "Motion graphics video preview",
   },
   {
     id: "landing",
@@ -74,21 +78,21 @@ const SERVICES: Service[] = [
     titleSerif: "Design",
     description:
       "Focused landing page concepts that carry your ad message through to a clear offer, strong proof and one next step.",
-    accent: "#B45309",
-    tone: "#F6F2E9",
+    accent: "#141413",
+    tone: "#ECEAE4",
     image: "/landing/services/web-design.png",
     imageAlt: "Landing page and website design example",
   },
 ];
 
-function ArtworkImage({ service, className = "" }: { service: Service; className?: string }) {
+function ArtworkImage({ service }: { service: Service }) {
   return (
     <Image
       src={service.image}
       alt={service.imageAlt}
       fill
       sizes="(max-width: 760px) 88vw, (max-width: 1100px) 44vw, 620px"
-      className={`service-art-image ${className}`}
+      className={`service-art-image ${service.id === "copywriting" ? "object-contain object-right-bottom" : ""}`}
     />
   );
 }
@@ -98,51 +102,36 @@ function ServiceArtwork({ service }: { service: Service }) {
     case "creative":
       return (
         <div className="service-artwork service-artwork--creative" aria-hidden="true">
-          <div className="creative-sheet creative-sheet--back">
-            <span className="creative-sheet-back-label">SOCIAL / 9:16</span>
-            <div className="creative-sheet-back-art"><i /><i /><b>YOUR NEXT<br />BIG IDEA</b></div>
+          <div className="creative-poster">
+            <div className="creative-poster-header"><span>AD CREATIVE</span><b>3.8x ROAS</b></div>
+            <div className="creative-poster-image"><ArtworkImage service={service} /></div>
+            <div className="creative-poster-footer"><i /><i /><i /><strong>4:5 FEED</strong></div>
           </div>
-          <div className="creative-sheet creative-sheet--front">
-            <div className="creative-sheet-top"><span>CAMPAIGN CREATIVE</span><b>4:5</b></div>
-            <div className="creative-sheet-image"><ArtworkImage service={service} /></div>
-            <div className="creative-sheet-bottom"><span>Designed to convert</span><b>↗</b></div>
-          </div>
+          <div className="creative-tag"><span>HIGH-PERFORMANCE</span><b>PAID SOCIAL</b></div>
         </div>
       );
     case "copywriting":
       return (
-        <div className="service-artwork service-artwork--copy" aria-hidden="true">
-          <div className="copy-document">
-            <div className="mock-window-bar"><i /><i /><i /><span>HOOK TEST / META</span></div>
-            <div className="copy-variant copy-variant--first">
-              <div className="copy-variant-heading"><b>HOOK A · PAIN POINT</b><span>01</span></div>
-              <p>Still spending on ads that people scroll past?</p>
-              <div className="copy-lines"><i /><i /></div>
-            </div>
-            <div className="copy-variant copy-variant--winner">
-              <div className="copy-variant-heading"><b>HOOK B · SOCIAL PROOF</b><span>WINNER</span></div>
-              <p>Make every campaign creative count.</p>
-              <div className="copy-lines"><i /><i /></div>
-            </div>
-            <div className="copy-document-foot"><span>PRIMARY TEXT · 3 VARIATIONS</span><div><ArtworkImage service={service} /></div></div>
+        <div className="service-artwork service-artwork--copywriting" aria-hidden="true">
+          <div className="copywriting-card">
+            <div className="copywriting-headline"><span>PRIMARY TEXT</span><b>The ad that cuts through the noise.</b></div>
+            <div className="copywriting-lines"><i /><i /><i /></div>
+            <div className="copywriting-cta"><span>HOOK VARIATIONS</span><b>3 Options</b></div>
           </div>
+          <div className="copywriting-accent-image"><ArtworkImage service={service} /></div>
         </div>
       );
     case "audit":
       return (
         <div className="service-artwork service-artwork--audit" aria-hidden="true">
-          <div className="audit-panel audit-panel--before">
-            <span className="audit-panel-label">CURRENT CREATIVE</span>
-            <div className="audit-thumb"><ArtworkImage service={service} /></div>
-            <div className="audit-metric"><span>CTR</span><b>0.8%</b><i /></div>
-            <div className="audit-metric"><span>CONVERSION</span><b>1.2%</b><i /></div>
-          </div>
-          <div className="audit-arrow" aria-hidden="true">→</div>
-          <div className="audit-panel audit-panel--after">
-            <span className="audit-panel-label">CREATIVE DIRECTION</span>
-            <div className="audit-chart"><i /><i /><i /><i /><i /><i /></div>
-            <div className="audit-result"><span>KEY OPPORTUNITY</span><b>Clearer offer + stronger hook</b></div>
-            <span className="audit-improvement">OPTIMIZATION PLAN</span>
+          <div className="audit-sheet">
+            <div className="audit-header"><span>CREATIVE AUDIT</span><b>Score: 84 / 100</b></div>
+            <div className="audit-rows">
+              <div><i>✓</i><span>Hook strength</span><b>Strong</b></div>
+              <div><i>!</i><span>Offer clarity</span><b>Needs focus</b></div>
+              <div><i>✓</i><span>Visual hierarchy</span><b>Optimized</b></div>
+            </div>
+            <div className="audit-verdict">3 critical improvements identified</div>
           </div>
         </div>
       );
@@ -193,31 +182,69 @@ export default function ServicesSection() {
   return (
     <section id="services" className="services-section">
       <div className="services-container">
-        <header className="services-heading">
-          <h2>Browse our core <em>capabilities</em></h2>
+        <motion.header
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          className="services-heading"
+        >
+          <h2>
+            Browse our core <em>capabilities</em>
+          </h2>
           <p className="services-intro">
             Creative and campaign support to turn your ideas into marketing that works.
           </p>
-        </header>
+        </motion.header>
 
-        <div className="services-grid">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          variants={{
+            hidden: {},
+            visible: {
+              transition: {
+                delayChildren: 0.25,
+                staggerChildren: 0.12,
+              },
+            },
+          }}
+          className="services-grid"
+        >
           {SERVICES.map((service) => (
-            <article
+            <motion.article
               key={service.id}
+              variants={{
+                hidden: { opacity: 0, y: 26 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
               className={`service-card service-card--${service.id}`}
-              style={{ "--service-accent": service.accent, "--service-tone": service.tone } as CSSProperties}
+              style={
+                {
+                  "--service-accent": service.accent,
+                  "--service-tone": service.tone,
+                } as CSSProperties
+              }
             >
               <div className="service-copy">
-                <h3>{service.titlePlain} <em>{service.titleSerif}</em></h3>
+                <h3>
+                  {service.titlePlain} <em>{service.titleSerif}</em>
+                </h3>
                 <p>{service.description}</p>
               </div>
               <ServiceArtwork service={service} />
-              <a className="service-link" href="#quote">
+              <Link className="service-link" href="/start-project">
                 Explore service <span aria-hidden="true">↗</span>
-              </a>
-            </article>
+              </Link>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

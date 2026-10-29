@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
+import { motion } from "motion/react";
 
 interface FaqItem {
   question: string;
@@ -69,7 +70,13 @@ export default function FaqSection() {
         {/* 5/12 Left + 7/12 Right Grid with constrained question stack */}
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-14">
           {/* LEFT COLUMN (lg:col-span-5): Heading + Sub-Links + Enlarged Transparent faq-bear */}
-          <div className="flex flex-col items-start lg:sticky lg:top-28 lg:col-span-5">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.65, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-start lg:sticky lg:top-28 lg:col-span-5"
+          >
             <h2 className="text-4xl font-bold leading-[1.06] tracking-[-0.03em] text-[#141413] sm:text-5xl lg:text-[3.5rem]">
               Have more
               <br />
@@ -94,7 +101,13 @@ export default function FaqSection() {
             </p>
 
             {/* Enlarged Transparent faq-bear Illustration */}
-            <div className="relative mt-10 h-[280px] w-[290px] pl-1 sm:mt-12 sm:h-[330px] sm:w-[340px] lg:mt-14 lg:h-[380px] lg:w-[380px]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.32, duration: 0.7 }}
+              className="relative mt-10 h-[280px] w-[290px] pl-1 sm:mt-12 sm:h-[330px] sm:w-[340px] lg:mt-14 lg:h-[380px] lg:w-[380px]"
+            >
               <Image
                 src="/landing/faq-bear.svg"
                 alt="AdsPolisher FAQ mascot"
@@ -103,17 +116,39 @@ export default function FaqSection() {
                 className="object-contain object-left-bottom"
                 priority
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* RIGHT COLUMN (lg:col-span-7): Decreased Width Soft Cream Accordion Stack */}
-          <div className="w-full max-w-[660px] space-y-3.5 lg:col-span-7 lg:ml-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={{
+              hidden: {},
+              visible: {
+                transition: {
+                  delayChildren: 0.24,
+                  staggerChildren: 0.1,
+                },
+              },
+            }}
+            className="w-full max-w-[660px] space-y-3.5 lg:col-span-7 lg:ml-auto"
+          >
             {FAQ_ITEMS.map((item, idx) => {
               const isOpen = openIndex === idx;
 
               return (
-                <div
+                <motion.div
                   key={idx}
+                  variants={{
+                    hidden: { opacity: 0, y: 18 },
+                    visible: {
+                      opacity: 1,
+                      y: 0,
+                      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                    },
+                  }}
                   className="overflow-hidden rounded-xl bg-[#F6F4EE] transition-colors duration-200 hover:bg-[#EFECE4]"
                 >
                   <button
@@ -164,10 +199,10 @@ export default function FaqSection() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "motion/react";
+
 export default function CreativeShowcaseSection() {
   return (
     <section
@@ -22,7 +26,11 @@ export default function CreativeShowcaseSection() {
           margin: "0 auto",
         }}
       >
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="creative-showcase-header"
           style={{
             paddingBottom: "32px",
@@ -38,7 +46,8 @@ export default function CreativeShowcaseSection() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "8px",
-                fontFamily: "ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace",
+                fontFamily:
+                  "ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace",
                 fontSize: "0.6875rem",
                 fontWeight: 700,
                 letterSpacing: "0.18em",
@@ -86,7 +95,8 @@ export default function CreativeShowcaseSection() {
               <em
                 className="creative-showcase-headline-accent"
                 style={{
-                  fontFamily: "'Playfair Display', Georgia, 'Times New Roman', serif",
+                  fontFamily:
+                    "'Playfair Display', Georgia, 'Times New Roman', serif",
                   fontSize: "clamp(30px, 3.8vw, 48px)",
                   fontStyle: "italic",
                   fontWeight: 400,
@@ -99,25 +109,31 @@ export default function CreativeShowcaseSection() {
               </em>
             </h2>
           </div>
-
-        </div>
+        </motion.div>
       </div>
 
       {/* ── Slideshow (isolated iframe with full responsive height) ── */}
-      <iframe
-        className="creative-showcase-iframe"
-        src="/landing/diagonal-slideshow/index.html"
-        title="AdsPolisher projects and designs showcase"
-        allow="autoplay; fullscreen"
-        style={{
-          display: "block",
-          width: "100%",
-          height: "clamp(760px, 90vh, 960px)",
-          border: "none",
-          marginTop: "clamp(36px, 4vw, 56px)",
-          background: "#f7f5f0",
-        }}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.7, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <iframe
+          className="creative-showcase-iframe"
+          src="/landing/diagonal-slideshow/index.html"
+          title="AdsPolisher projects and designs showcase"
+          allow="autoplay; fullscreen"
+          style={{
+            display: "block",
+            width: "100%",
+            height: "clamp(760px, 90vh, 960px)",
+            border: "none",
+            marginTop: "clamp(36px, 4vw, 56px)",
+            background: "#f7f5f0",
+          }}
+        />
+      </motion.div>
     </section>
   );
 }

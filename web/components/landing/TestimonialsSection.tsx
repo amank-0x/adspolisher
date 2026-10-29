@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { motion } from "motion/react";
 
 interface TestimonialItem {
   id: string;
@@ -143,7 +144,13 @@ export default function TestimonialsSection() {
         {/* ===================================================================
             SECTION HEADER
            =================================================================== */}
-        <div className="mb-14 border-b border-[#141413]/10 pb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 22 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.65, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-14 border-b border-[#141413]/10 pb-8"
+        >
           <h2 className="text-4xl font-bold leading-[1.06] tracking-[-0.03em] text-[#141413] sm:text-5xl lg:text-[3.4rem]">
             Trusted by fast-moving{" "}
             <span
@@ -156,16 +163,39 @@ export default function TestimonialsSection() {
               brands &amp; founders.
             </span>
           </h2>
-        </div>
+        </motion.div>
 
         {/* ===================================================================
             TOP ROW: 2 FEATURED DEEP-DIVE TESTIMONIAL CARDS
            =================================================================== */}
-        <div className="grid grid-cols-1 gap-7 lg:grid-cols-2">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          variants={{
+            hidden: {},
+            visible: {
+              transition: {
+                delayChildren: 0.25,
+                staggerChildren: 0.16,
+              },
+            },
+          }}
+          className="grid grid-cols-1 gap-7 lg:grid-cols-2"
+        >
           {featuredReviews.map((item) => (
-            <article
+            <motion.article
               key={item.id}
-              className="group relative flex flex-col justify-between overflow-hidden rounded-[28px] border border-[#141413]/10 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl sm:p-10"
+              variants={{
+                hidden: { opacity: 0, y: 26 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              className="group relative flex flex-col justify-between overflow-hidden rounded-[28px] border border-[#141413]/10 bg-white p-8 shadow-sm transition-shadow duration-300 hover:shadow-xl sm:p-10"
             >
               {/* Top Accent Strip */}
               <div
@@ -249,18 +279,41 @@ export default function TestimonialsSection() {
                   📍 {item.city}
                 </span>
               </div>
-            </article>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
 
         {/* ===================================================================
             BOTTOM ROW: 3 COMPACT REVIEW CARDS
            =================================================================== */}
-        <div className="mt-7 grid grid-cols-1 gap-7 md:grid-cols-3">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          variants={{
+            hidden: {},
+            visible: {
+              transition: {
+                delayChildren: 0.28,
+                staggerChildren: 0.14,
+              },
+            },
+          }}
+          className="mt-7 grid grid-cols-1 gap-7 md:grid-cols-3"
+        >
           {standardReviews.map((item) => (
-            <article
+            <motion.article
               key={item.id}
-              className="group flex flex-col justify-between rounded-[24px] border border-[#141413]/10 bg-[#ECEAE4]/55 p-7 transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-lg"
+              variants={{
+                hidden: { opacity: 0, y: 22 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className="group flex flex-col justify-between rounded-[24px] border border-[#141413]/10 bg-[#ECEAE4]/55 p-7 transition-colors duration-300 hover:bg-white hover:shadow-lg"
             >
               <div>
                 <div className="flex items-center justify-between">
@@ -317,9 +370,9 @@ export default function TestimonialsSection() {
                   </div>
                 </div>
               </div>
-            </article>
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

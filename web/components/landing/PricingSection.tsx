@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import React from "react";
+import { motion } from "motion/react";
 
 interface PackageItem {
   id: string;
@@ -125,7 +126,13 @@ export default function PricingSection() {
 
       <div className="relative z-10 mx-auto max-w-[1280px] px-6 md:px-12">
         {/* Top Centered Section Header */}
-        <div className="mx-auto max-w-[720px] text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.65, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          className="mx-auto max-w-[720px] text-center"
+        >
           <h2 className="text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl lg:text-6xl">
             Choose the{" "}
             <em
@@ -145,14 +152,37 @@ export default function PricingSection() {
             Clear deliverables, predictable turnaround times, and defined revision
             rounds—no hidden agency retainers.
           </p>
-        </div>
+        </motion.div>
 
         {/* 3-Column Pricing Cards Grid */}
-        <div className="mt-16 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3 lg:gap-8">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-60px" }}
+          variants={{
+            hidden: {},
+            visible: {
+              transition: {
+                delayChildren: 0.3,
+                staggerChildren: 0.16,
+              },
+            },
+          }}
+          className="mt-16 grid grid-cols-1 items-stretch gap-6 lg:grid-cols-3 lg:gap-8"
+        >
           {PACKAGES.map((pkg) => (
-            <div
+            <motion.div
               key={pkg.id}
-              className={`flex flex-col justify-between rounded-[24px] bg-white p-5 text-[#141413] shadow-[0_24px_60px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-1.5 sm:p-6 ${
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
+                },
+              }}
+              whileHover={{ y: -6, transition: { duration: 0.2 } }}
+              className={`flex flex-col justify-between rounded-[24px] bg-white p-5 text-[#141413] shadow-[0_24px_60px_rgba(0,0,0,0.45)] transition-shadow duration-300 sm:p-6 ${
                 pkg.popular ? "ring-2 ring-[#F472B6]" : ""
               }`}
             >
@@ -289,9 +319,9 @@ export default function PricingSection() {
                   </span>
                 </Link>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

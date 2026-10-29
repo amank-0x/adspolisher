@@ -35,7 +35,7 @@ export function PublicNavbar() {
             Why Us
           </Link>
           <Link href="/become-a-creator" className="text-neutral-500 transition-colors hover:text-black">
-            Join as Creator
+            Become a Creator
           </Link>
         </nav>
 
@@ -81,7 +81,7 @@ export function PublicNavbar() {
               Why Us
             </Link>
             <Link href="/become-a-creator" onClick={() => setMobileMenuOpen(false)}>
-              Join as Creator
+              Become a Creator
             </Link>
             <hr className="my-2 border-black/10" />
             <Link

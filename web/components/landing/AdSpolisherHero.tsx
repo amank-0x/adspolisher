@@ -157,14 +157,14 @@ export default function AdSpolisherHero() {
           <nav className={`stage-nav-links${scrollProgress > 0.02 ? " is-scrolled" : ""}`} aria-label="Primary navigation">
             <a href="#services">Services</a>
             <a href="#work">Our Work</a>
-            <a href="#how">How It Works</a>
             <a href="#pricing">Pricing</a>
-            <a href="#faq">FAQ</a>
+            <Link href="/become-a-creator">Become a Creator</Link>
+            <Link href="/start-project">Request Project</Link>
             <span className="nav-progress-track" aria-hidden="true"><i style={{ width: `${scrollProgress * 100}%` }} /></span>
           </nav>
           <div className="stage-nav-actions">
             <Link className="sign-in-button" href="/auth?mode=signin">Sign In</Link>
-            <a className="quote-button" href="#quote">Get a Quote</a>
+            <Link className="quote-button" href="/start-project">Start a Project</Link>
           </div>
         </header>
 
@@ -183,7 +183,7 @@ export default function AdSpolisherHero() {
             <h1>Better Ads.<br />Stronger Brands.<br /><em key={activeStage.highlight}>{activeStage.highlight}</em></h1>
             <p className="right-hero-description" key={activeStage.description}>{activeStage.description}</p>
             <div className="right-hero-actions">
-              <a className="primary-action" href="#quote">Start a Project <b>→</b></a>
+              <Link className="primary-action" href="/start-project">Start a Project <b>→</b></Link>
               <a className="secondary-action" href="#services">Explore Services</a>
             </div>
           </div>
