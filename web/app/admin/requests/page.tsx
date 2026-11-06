@@ -25,6 +25,7 @@ import {
   Check,
 } from "lucide-react";
 import ProposalComposer from "@/components/admin/ProposalComposer";
+import { backendFetch } from "@/lib/backend-api";
 
 type RequestStatus =
   | "ALL"
@@ -78,7 +79,7 @@ export default function AdminRequestsPage() {
 
   const fetchRequests = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/requests");
+      const res = await backendFetch("/api/v1/requests/all");
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
@@ -103,7 +104,7 @@ export default function AdminRequestsPage() {
   const handleStatusChange = async (id: string, newStatus: string) => {
     setUpdatingId(id);
     try {
-      const res = await fetch("/api/admin/requests", {
+      const res = await backendFetch(`/api/v1/requests/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: newStatus }),

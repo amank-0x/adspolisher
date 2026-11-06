@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Loader2, Mail, X } from "lucide-react";
+import { backendFetch } from "@/lib/backend-api";
 
 type ProposalRequest = {
   id: string;
@@ -50,7 +51,7 @@ export default function ProposalComposer({ request, onClose, onComplete }: Propo
 
     setSaving(mode);
     try {
-      const createResponse = await fetch("/api/admin/proposals", {
+      const createResponse = await backendFetch("/api/v1/admin/proposals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -72,7 +73,7 @@ export default function ProposalComposer({ request, onClose, onComplete }: Propo
       }
 
       if (mode === "send") {
-        const sendResponse = await fetch(`/api/admin/proposals/${created.data.id}`, { method: "POST" });
+        const sendResponse = await backendFetch(`/api/v1/admin/proposals/${created.data.id}/send`, { method: "POST" });
         const sent = (await sendResponse.json()) as { success?: boolean; message?: string };
         if (!sendResponse.ok || !sent.success) throw new Error(sent.message || "Could not send proposal email.");
         onComplete("Proposal saved and sent to the client.");

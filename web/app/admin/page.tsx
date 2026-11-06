@@ -22,6 +22,7 @@ import {
   DollarSign,
   CheckCircle2,
 } from "lucide-react";
+import { backendFetch } from "@/lib/backend-api";
 
 interface AdminOverviewData {
   counts: {
@@ -106,7 +107,7 @@ export default function AdminOverviewPage() {
   const fetchOverview = useCallback(async (isSilent = false) => {
     if (!isSilent) setRefreshing(true);
     try {
-      const res = await fetch("/api/admin/overview");
+      const res = await backendFetch("/api/v1/requests/admin/overview");
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
