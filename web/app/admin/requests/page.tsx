@@ -111,10 +111,11 @@ export default function AdminRequestsPage() {
       });
 
       if (res.ok) {
+        const payload = await res.json().catch(() => null);
         setRequests((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
+          prev.map((r) => (r.id === id ? { ...r, status: newStatus, project: payload?.data?.project ?? r.project } : r))
         );
-        setSuccessToast(`Updated status to ${newStatus}`);
+        setSuccessToast(payload?.message || `Updated status to ${newStatus}`);
         setTimeout(() => setSuccessToast(null), 3000);
       }
     } catch (err) {
@@ -452,6 +453,13 @@ export default function AdminRequestsPage() {
                         <Mail size={12} />
                         <span>Build &amp; send proposal</span>
                       </button>
+                      {req.status !== "ACCEPTED" && req.status !== "CONVERTED" && req.status !== "DECLINED" && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <button type="button" disabled={isUpdating} onClick={() => void handleStatusChange(req.id, "ACCEPTED")} className="rounded-xl bg-emerald-600 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50">Accept &amp; create project</button>
+                          <button type="button" disabled={isUpdating} onClick={() => void handleStatusChange(req.id, "DECLINED")} className="rounded-xl border border-red-200 bg-red-50 py-2 text-xs font-bold text-red-700 hover:bg-red-100 disabled:opacity-50">Reject request</button>
+                        </div>
+                      )}
+                      {req.project && <Link href="/admin/projects" className="block text-center text-xs font-bold text-[#4F46E5] hover:underline">View project · {req.project.projectCode}</Link>}
                     </div>
                   </div>
                 </div>

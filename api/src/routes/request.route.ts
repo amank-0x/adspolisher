@@ -6,8 +6,22 @@ import jwt from "jsonwebtoken";
 import type { JwtPayload } from "../types/index.js";
 import type { QuoteStatus } from "@prisma/client";
 import { requireAdmin, toBetterAuthHeaders } from "../middleware/requireAdmin.js";
+import { sendRequestAcceptedEmail } from "../utils/sendRequestAcceptedEmail.js";
 
 const requestRouter: Router = Router();
+
+requestRouter.get("/projects", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const projects = await prismaClient.project.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { client: { select: { name: true, email: true } } },
+    });
+    return res.json({ success: true, data: projects });
+  } catch (error) {
+    console.error("[ADMIN PROJECTS GET ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to load projects." });
+  }
+});
 
 const createRequestSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -519,21 +533,40 @@ requestRouter.patch("/:id", requireAdmin, async (req: Request, res: Response) =>
   }
 
   try {
-    const updated = await withDatabaseRetry(() =>
-      prismaClient.quoteRequest.update({
-        where: { id },
-        data: {
-          status: result.data.status,
-          ...(result.data.internalNotes !== undefined
-            ? { internalNotes: result.data.internalNotes }
-            : {}),
-        },
-      })
-    );
+    const existing = await prismaClient.quoteRequest.findUnique({ where: { id }, include: { project: true } });
+    if (!existing) return res.status(404).json({ success: false, message: "Request not found" });
+    const updated = await prismaClient.$transaction(async (tx) => {
+      const request = await tx.quoteRequest.update({ where: { id }, data: {
+        status: result.data.status,
+        ...(result.data.internalNotes !== undefined ? { internalNotes: result.data.internalNotes } : {}),
+      }});
+      if (result.data.status === "ACCEPTED" && !existing.project) {
+        const client = existing.userId
+          ? await tx.user.findUnique({ where: { id: existing.userId } })
+          : await tx.user.upsert({ where: { email: existing.email }, update: {}, create: { email: existing.email, name: existing.name } });
+        if (!client) throw new Error("Could not find or create project client");
+        const details = existing.attachments && typeof existing.attachments === "object" ? existing.attachments as Record<string, unknown> : {};
+        const title = typeof details.projectTitle === "string" ? details.projectTitle : `${existing.companyName || existing.name} - Creative Project`;
+        await tx.project.create({ data: {
+          projectCode: `AP-${Date.now().toString(36).toUpperCase()}`,
+          title,
+          brief: existing.message,
+          status: "INTAKE",
+          clientId: client.id,
+          quoteRequestId: id,
+        }});
+      }
+      return request;
+    });
+    let emailSent = false;
+    if (result.data.status === "ACCEPTED" && existing.status !== "ACCEPTED") {
+      try { await sendRequestAcceptedEmail(existing.email, existing.name, process.env.NEXT_APP_URL || "https://www.adspolisher.com"); emailSent = true; }
+      catch (emailError) { console.error("[REQUEST ACCEPTANCE EMAIL ERROR]", emailError); }
+    }
 
     return res.json({
       success: true,
-      message: "Request updated successfully",
+      message: result.data.status === "ACCEPTED" ? (emailSent ? "Request accepted, project created, and client notified." : "Request accepted and project created, but confirmation email could not be sent.") : "Request updated successfully",
       data: updated,
     });
   } catch (error: any) {
