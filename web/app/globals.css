@@ -626,12 +626,14 @@ html {
 
 .whatsapp-pill {
     position: fixed;
-    left: clamp(18px, 4vw, 58px);
+    left: max(clamp(18px, 4vw, 58px), env(safe-area-inset-left));
     bottom: clamp(18px, 3vh, 30px);
     z-index: 46;
     display: inline-flex;
     align-items: center;
     gap: 9px;
+    max-width: calc(100vw - 36px);
+    min-height: 44px;
     border: 1px solid rgba(255, 255, 255, .12);
     border-radius: 999px;
     padding: 11px 15px 11px 12px;
@@ -643,6 +645,12 @@ html {
     white-space: nowrap;
     animation: whatsapp-bounce 1.15s ease-in-out infinite alternate;
     transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+}
+
+.whatsapp-pill > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .whatsapp-pill:hover {
@@ -2072,13 +2080,33 @@ html {
     .iso-grid-viewport {
         perspective: 1800px;
     }
-    .right-hero-wrap { top: 100px; right: 20px; width: min(390px, calc(100vw - 40px)); min-height: 0; }
+    .right-hero-wrap { top: auto; right: 20px; bottom: clamp(92px, 15vh, 132px); width: min(390px, calc(100vw - 40px)); min-height: 0; }
     .right-hero-stage h1 { margin-top: 12px; font-size: clamp(36px, 9vw, 52px); }
     .right-hero-description { margin-top: 10px; font-size: 12px; }
     .right-hero-actions { gap: 7px; margin-top: 15px; }
     .right-hero-actions a { min-height: 40px; padding: 10px 14px; font-size: 10px; }
     .telemetry-pill { right: 14px; bottom: 14px; gap: 9px; padding: 10px 13px; }
-    .whatsapp-pill { left: 14px; bottom: 14px; padding: 10px 13px 10px 11px; }
+    .whatsapp-pill {
+        left: max(14px, env(safe-area-inset-left));
+        bottom: max(14px, env(safe-area-inset-bottom));
+        max-width: calc(100vw - 28px);
+        gap: 7px;
+        padding: 10px 13px 10px 11px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 360px) {
+    .whatsapp-pill {
+        max-width: calc(100vw - 24px);
+        padding-right: 11px;
+        padding-left: 10px;
+    }
+
+    .whatsapp-pill svg {
+        width: 18px;
+        height: 18px;
+    }
 }
 
 @media (min-width: 761px) and (max-width: 920px) {

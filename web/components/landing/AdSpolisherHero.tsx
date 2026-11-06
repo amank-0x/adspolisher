@@ -116,7 +116,8 @@ export default function AdSpolisherHero() {
         const velocity = currentProgress - targetProgress;
         const tilt = Math.max(-3, Math.min(3, velocity * 100));
         const floatY = Math.sin(currentProgress * Math.PI * 8) * 2;
-        heroRef.current.style.transform = `perspective(1200px) rotateX(${tilt}deg) translate3d(28px, ${78 + floatY}px, 0)`;
+        const mobileOffset = window.innerWidth <= 760 ? 0 : 78;
+        heroRef.current.style.transform = `perspective(1200px) rotateX(${tilt}deg) translate3d(28px, ${mobileOffset + floatY}px, 0)`;
       }
 
       frameId = requestAnimationFrame(animate);

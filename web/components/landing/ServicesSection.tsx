@@ -103,21 +103,13 @@ function ServiceArtwork({ service }: { service: Service }) {
       return (
         <div className="service-artwork service-artwork--creative" aria-hidden="true">
           <div className="creative-poster">
-            <div className="creative-poster-header"><span>AD CREATIVE</span><b>3.8x ROAS</b></div>
             <div className="creative-poster-image"><ArtworkImage service={service} /></div>
-            <div className="creative-poster-footer"><i /><i /><i /><strong>4:5 FEED</strong></div>
           </div>
-          <div className="creative-tag"><span>HIGH-PERFORMANCE</span><b>PAID SOCIAL</b></div>
         </div>
       );
     case "copywriting":
       return (
         <div className="service-artwork service-artwork--copywriting" aria-hidden="true">
-          <div className="copywriting-card">
-            <div className="copywriting-headline"><span>PRIMARY TEXT</span><b>The ad that cuts through the noise.</b></div>
-            <div className="copywriting-lines"><i /><i /><i /></div>
-            <div className="copywriting-cta"><span>HOOK VARIATIONS</span><b>3 Options</b></div>
-          </div>
           <div className="copywriting-accent-image"><ArtworkImage service={service} /></div>
         </div>
       );
@@ -125,11 +117,10 @@ function ServiceArtwork({ service }: { service: Service }) {
       return (
         <div className="service-artwork service-artwork--audit" aria-hidden="true">
           <div className="audit-sheet">
-            <div className="audit-header"><span>CREATIVE AUDIT</span><b>Score: 84 / 100</b></div>
             <div className="audit-rows">
-              <div><i>✓</i><span>Hook strength</span><b>Strong</b></div>
-              <div><i>!</i><span>Offer clarity</span><b>Needs focus</b></div>
-              <div><i>✓</i><span>Visual hierarchy</span><b>Optimized</b></div>
+              <div><i>✓&nbsp;</i><span>Hook strength&nbsp;</span><b>Strong</b></div>
+              <div><i>!&nbsp;</i><span>Offer clarity&nbsp;</span><b>Needs focus</b></div>
+              <div><i>✓&nbsp;</i><span>Visual hierarchy&nbsp;</span><b>Optimized</b></div>
             </div>
             <div className="audit-verdict">3 critical improvements identified</div>
           </div>
