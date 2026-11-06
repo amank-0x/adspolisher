@@ -1,6 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
 import { auth } from "../auth.js";
 
+export function toBetterAuthHeaders(req: Request): Headers {
+  const headers = new Headers();
+  for (const [key, value] of Object.entries(req.headers)) {
+    if (Array.isArray(value)) headers.set(key, value.join(", "));
+    else if (value !== undefined) headers.set(key, value);
+  }
+  return headers;
+}
+
 /**
  * Protects staff-only API routes with the Better Auth session.
  * Role checks stay on the server; the dashboard must never be trusted to
@@ -13,7 +22,7 @@ export async function requireAdmin(
 ) {
   try {
     const session = await auth.api.getSession({
-      headers: req.headers as Record<string, string>,
+      headers: toBetterAuthHeaders(req),
     });
     const appRole = String(session?.user?.appRole ?? "").toUpperCase();
 

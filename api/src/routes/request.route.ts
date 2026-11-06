@@ -5,7 +5,7 @@ import { auth } from "../auth.js";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "../types/index.js";
 import type { QuoteStatus } from "@prisma/client";
-import { requireAdmin } from "../middleware/requireAdmin.js";
+import { requireAdmin, toBetterAuthHeaders } from "../middleware/requireAdmin.js";
 
 const requestRouter: Router = Router();
 
@@ -45,7 +45,7 @@ async function resolveUser(req: Request): Promise<{ id: string; email: string; a
   // 1. Try Better Auth session
   try {
     const session = await auth.api.getSession({
-      headers: req.headers as any,
+      headers: toBetterAuthHeaders(req),
     });
     if (session?.user) {
       return { id: session.user.id, email: session.user.email, appRole: (session.user as any).appRole };
