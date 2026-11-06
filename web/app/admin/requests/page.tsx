@@ -112,9 +112,9 @@ export default function AdminRequestsPage() {
 
       if (res.ok) {
         const payload = await res.json().catch(() => null);
-        setRequests((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, status: newStatus, project: payload?.data?.project ?? r.project } : r))
-        );
+        setRequests((prev) => newStatus === "ACCEPTED" || newStatus === "DECLINED"
+          ? prev.filter((r) => r.id !== id)
+          : prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
         setSuccessToast(payload?.message || `Updated status to ${newStatus}`);
         setTimeout(() => setSuccessToast(null), 3000);
       }

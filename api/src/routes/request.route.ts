@@ -463,7 +463,7 @@ requestRouter.get("/all", requireAdmin, async (req: Request, res: Response) => {
     const status = req.query.status as string;
     const search = req.query.search as string;
 
-    const where: any = {};
+    const where: any = { status: { notIn: ["ACCEPTED", "CONVERTED", "DECLINED"] } };
     if (status && status !== "ALL") {
       where.status = status as QuoteStatus;
     }
@@ -556,17 +556,20 @@ requestRouter.patch("/:id", requireAdmin, async (req: Request, res: Response) =>
           quoteRequestId: id,
         }});
       }
+      if (result.data.status === "DECLINED") {
+        await tx.quoteRequest.delete({ where: { id } });
+      }
       return request;
     });
     let emailSent = false;
-    if (result.data.status === "ACCEPTED" && existing.status !== "ACCEPTED") {
+    if ((result.data.status === "ACCEPTED" && existing.status !== "ACCEPTED") || result.data.status === "DECLINED") {
       try { await sendRequestAcceptedEmail(existing.email, existing.name, process.env.NEXT_APP_URL || "https://www.adspolisher.com"); emailSent = true; }
       catch (emailError) { console.error("[REQUEST ACCEPTANCE EMAIL ERROR]", emailError); }
     }
 
     return res.json({
       success: true,
-      message: result.data.status === "ACCEPTED" ? (emailSent ? "Request accepted, project created, and client notified." : "Request accepted and project created, but confirmation email could not be sent.") : "Request updated successfully",
+      message: result.data.status === "ACCEPTED" ? (emailSent ? "Request accepted, project created, and client notified." : "Request accepted and project created, but confirmation email could not be sent.") : result.data.status === "DECLINED" ? "Request rejected and removed." : "Request updated successfully",
       data: updated,
     });
   } catch (error: any) {

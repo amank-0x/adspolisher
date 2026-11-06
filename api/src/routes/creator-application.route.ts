@@ -151,7 +151,9 @@ adminCreatorApplicationRouter.patch("/:id", requireAdmin, async (req: Request, r
         }
       }
 
-      const updatedApplication = await transaction.creatorApplication.update({
+      const updatedApplication = parsed.data.status === "REJECTED"
+        ? await transaction.creatorApplication.delete({ where: { id } })
+        : await transaction.creatorApplication.update({
         where: { id },
         data: {
           status: parsed.data.status,
@@ -203,7 +205,7 @@ adminCreatorApplicationRouter.patch("/:id", requireAdmin, async (req: Request, r
           ? emailSent ? "Application rejected and notification email sent." : "Application rejected, but the notification email could not be sent."
           : "Application moved back to pending.",
       emailSent,
-      data: result,
+      data: parsed.data.status === "REJECTED" ? null : result,
     });
   } catch (error) {
     console.error("[ADMIN CREATOR APPLICATION REVIEW ERROR]", error);
