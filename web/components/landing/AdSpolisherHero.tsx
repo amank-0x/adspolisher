@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Menu, X } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
@@ -75,6 +76,7 @@ export default function AdSpolisherHero() {
   const gridRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     let targetProgress = 0;
@@ -135,6 +137,21 @@ export default function AdSpolisherHero() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileMenuOpen]);
+
   const activeStageIndex = Math.min(SCROLL_STAGES.length - 1, Math.floor(scrollProgress * SCROLL_STAGES.length));
   const activeStage = SCROLL_STAGES[activeStageIndex];
   const activeCard = Math.min(TOTAL_CARDS, Math.max(1, Math.round(1 + scrollProgress * (TOTAL_CARDS - 1))));
@@ -167,6 +184,15 @@ export default function AdSpolisherHero() {
             <Link className="creator-login-prompt" href="/creator/login">Are you a creator?</Link>
             <Link className="sign-in-button" href="/auth?mode=signin">Sign In</Link>
             <Link className="quote-button" href="/dashboard">Dashboard</Link>
+            <button
+              type="button"
+              className="stage-mobile-menu-button"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open navigation menu"
+              aria-expanded={mobileMenuOpen}
+            >
+              <Menu size={20} />
+            </button>
           </div>
         </header>
 
@@ -200,6 +226,36 @@ export default function AdSpolisherHero() {
         </aside>
 
       </section>
+
+      {mobileMenuOpen && (
+        <div className="stage-mobile-menu" role="dialog" aria-modal="true" aria-label="Mobile navigation menu">
+          <button
+            type="button"
+            className="stage-mobile-menu-backdrop"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close navigation menu"
+          />
+          <div className="stage-mobile-menu-panel">
+            <div className="stage-mobile-menu-header">
+              <span>Menu</span>
+              <button type="button" onClick={() => setMobileMenuOpen(false)} aria-label="Close navigation menu">
+                <X size={20} />
+              </button>
+            </div>
+            <nav className="stage-mobile-menu-links" aria-label="Mobile primary navigation">
+              <Link href="/services" onClick={() => setMobileMenuOpen(false)}>Services</Link>
+              <Link href="/work" onClick={() => setMobileMenuOpen(false)}>Our Work</Link>
+              <a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+              <Link href="/become-a-creator" onClick={() => setMobileMenuOpen(false)}>Become a Creator</Link>
+              <Link href="/start-project" onClick={() => setMobileMenuOpen(false)} className="is-primary">Request Project <span>→</span></Link>
+              <div className="stage-mobile-menu-divider" />
+              <Link href="/creator/login" onClick={() => setMobileMenuOpen(false)}>Are you a creator?</Link>
+              <Link href="/auth?mode=signin" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+            </nav>
+          </div>
+        </div>
+      )}
 
       <a
         className="whatsapp-pill"

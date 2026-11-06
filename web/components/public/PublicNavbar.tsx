@@ -2,11 +2,26 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Menu, X, ArrowRight } from 'lucide-react'
 
 export function PublicNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false)
+    }
+
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [mobileMenuOpen])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-black/[0.06] bg-[#eceae4]/90 backdrop-blur-md">
@@ -73,10 +88,18 @@ export function PublicNavbar() {
         </button>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Menu Modal */}
       {mobileMenuOpen && (
-        <div className="border-b border-black/10 bg-[#eceae4] px-6 py-6 md:hidden">
-          <nav className="flex flex-col gap-4 text-base font-semibold text-neutral-800">
+        <div className="fixed inset-0 z-[60] bg-black/30 p-4 backdrop-blur-sm md:hidden" role="dialog" aria-modal="true" aria-label="Mobile navigation menu">
+          <button type="button" className="absolute inset-0 h-full w-full cursor-default" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" />
+          <div className="relative mx-auto mt-16 max-w-md overflow-hidden rounded-3xl border border-white/80 bg-[#f7f5ef]/95 p-5 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between border-b border-black/10 pb-4">
+              <span className="text-xs font-bold uppercase tracking-[0.18em] text-neutral-500">Menu</span>
+              <button type="button" onClick={() => setMobileMenuOpen(false)} className="rounded-full p-2 text-neutral-600 hover:bg-black/5" aria-label="Close menu">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <nav className="flex flex-col gap-1 text-base font-semibold text-neutral-800">
             <Link href="/services" onClick={() => setMobileMenuOpen(false)}>
               Services
             </Link>
@@ -111,7 +134,8 @@ export function PublicNavbar() {
             >
               Dashboard <ArrowRight className="h-4 w-4" />
             </Link>
-          </nav>
+            </nav>
+          </div>
         </div>
       )}
     </header>

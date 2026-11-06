@@ -82,6 +82,18 @@ export function PublicFooter() {
                     <circle cx="17.5" cy="6.5" r="1" className="fill-current stroke-none" />
                   </svg>
                 </a>
+                <a
+                  href="https://www.youtube.com/@adspolisher"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="AdsPolisher on YouTube"
+                  title="YouTube"
+                  className="grid h-9 w-9 place-items-center rounded-full border border-black/10 bg-white/60 text-neutral-700 transition hover:-translate-y-0.5 hover:border-[#FF0000]/40 hover:bg-[#FF0000]/10 hover:text-[#FF0000]"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" className="h-[17px] w-[17px] fill-current">
+                    <path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2 31.3 31.3 0 0 0 0 12a31.3 31.3 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.3 31.3 0 0 0 24 12a31.3 31.3 0 0 0-.5-5.8ZM9.55 15.6V8.4L15.75 12l-6.2 3.6Z" />
+                  </svg>
+                </a>
               </div>
             </div>
           </div>

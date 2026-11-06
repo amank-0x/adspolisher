@@ -257,6 +257,99 @@ html {
     gap: 9px;
 }
 
+.stage-mobile-menu-button {
+    display: none;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(20, 20, 19, .1);
+    border-radius: 12px;
+    background: rgba(236, 234, 228, .86);
+    color: var(--ink);
+    box-shadow: 0 2px 8px rgba(20, 20, 19, .05);
+}
+
+.stage-mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 84px 16px 16px;
+}
+
+.stage-mobile-menu-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: rgba(20, 20, 19, .38);
+    backdrop-filter: blur(8px);
+}
+
+.stage-mobile-menu-panel {
+    position: relative;
+    width: min(100%, 390px);
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, .85);
+    border-radius: 24px;
+    background: rgba(247, 245, 239, .97);
+    box-shadow: 0 24px 70px rgba(20, 20, 19, .22);
+}
+
+.stage-mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2px 14px;
+    border-bottom: 1px solid rgba(20, 20, 19, .1);
+    color: #77736a;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+}
+
+.stage-mobile-menu-header button {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #52514e;
+}
+
+.stage-mobile-menu-header button:hover { background: rgba(20, 20, 19, .06); }
+
+.stage-mobile-menu-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 12px;
+}
+
+.stage-mobile-menu-links a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    color: #3a3935;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.stage-mobile-menu-links a:hover { background: rgba(20, 20, 19, .06); }
+.stage-mobile-menu-links a.is-primary { background: #141413; color: #fff; margin-top: 4px; }
+.stage-mobile-menu-links a.is-primary:hover { background: #2b2a27; }
+.stage-mobile-menu-divider { height: 1px; margin: 10px 0; background: rgba(20, 20, 19, .1); }
+
 .creator-login-prompt {
     display: inline-flex;
     align-items: center;
@@ -2063,6 +2156,7 @@ html {
     }
 
     .stage-nav-actions { gap: 0; }
+    .stage-mobile-menu-button { display: grid; }
     .creator-login-prompt { display: none; }
     .sign-in-button { display: none; }
     .quote-button {
@@ -2097,6 +2191,8 @@ html {
 }
 
 @media (max-width: 360px) {
+    .quote-button { display: none; }
+
     .whatsapp-pill {
         max-width: calc(100vw - 24px);
         padding-right: 11px;
@@ -2112,6 +2208,7 @@ html {
 @media (min-width: 761px) and (max-width: 920px) {
     .stage-nav .stage-nav-links { display: none; }
     .sign-in-button { display: none; }
+    .stage-mobile-menu-button { display: grid; }
 }
 
 @media (max-width: 480px) {
