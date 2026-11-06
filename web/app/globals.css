@@ -641,6 +641,7 @@ html {
     font-size: 10px;
     font-weight: 700;
     white-space: nowrap;
+    animation: whatsapp-bounce 1.15s ease-in-out infinite alternate;
     transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
 }
 
@@ -661,6 +662,15 @@ html {
     color: #25d366;
     font-size: 14px;
     line-height: 1;
+}
+
+@keyframes whatsapp-bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-8px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .whatsapp-pill { animation: none; }
 }
 
 @keyframes word-highlight-in {
