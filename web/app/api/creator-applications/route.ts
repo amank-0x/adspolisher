@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
+
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
@@ -45,28 +47,34 @@ export async function POST(req: Request) {
       type: file.type,
     }));
 
-    // Log the received application
-    console.log("[CREATOR APPLICATION RECEIVED - /become-a-creator]", {
-      name,
-      email,
-      location,
-      portfolioUrl,
-      secondaryUrl,
-      craftSpecialty,
-      primaryTools,
-      experienceLevel,
-      weeklyAvailability,
-      notesLength: notes.length,
-      filesCount: files.length,
-      fileSummaries,
-      timestamp: new Date().toISOString(),
+    const response = await fetch(`${apiBaseUrl}/api/v1/creator-applications`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: req.headers.get("cookie") || "",
+        authorization: req.headers.get("authorization") || "",
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        location,
+        portfolioUrl,
+        secondaryUrl,
+        craftSpecialty,
+        primaryTools,
+        experienceLevel,
+        weeklyAvailability,
+        notes,
+        fileSummaries,
+      }),
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Creator application submitted successfully",
-      timestamp: new Date().toISOString(),
-    });
+    const data = await response.json().catch(() => ({
+      success: false,
+      message: "Unexpected response from the application service.",
+    }));
+
+    return NextResponse.json(data, { status: response.status });
   } catch (err: unknown) {
     console.error("[CREATOR APPLICATION ERROR]", err);
     return NextResponse.json(
