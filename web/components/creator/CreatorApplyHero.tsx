@@ -16,9 +16,9 @@ export default function CreatorApplyHero() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.08, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        className="inline-flex items-center rounded-full border border-[#141413]/10 bg-white px-4 py-1.5 shadow-xs"
+        className="inline-flex items-center rounded-full border border-[#D9480F]/20 bg-gradient-to-r from-white via-[#FFF8F1] to-[#FFF1E6] px-6 py-3 shadow-[0_8px_28px_rgba(217,72,15,0.12)] ring-1 ring-white/80"
       >
-        <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#141413]">
+        <span className="font-mono text-sm font-extrabold uppercase tracking-[0.2em] text-[#C2410C] sm:text-base">
           APPLY AS A CREATOR
         </span>
       </motion.div>
