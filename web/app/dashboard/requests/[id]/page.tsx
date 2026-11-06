@@ -49,6 +49,20 @@ interface RequestDetail {
     projectCode: string;
     status: string;
   } | null;
+  proposals?: Array<{
+    id: string;
+    title: string;
+    summary: string;
+    deliverables?: unknown;
+    price: string;
+    currency: string;
+    timeline?: string | null;
+    revisionLimit?: number | null;
+    paymentTerms?: string | null;
+    expiresAt?: string | null;
+    status: string;
+    sentAt?: string | null;
+  }>;
 }
 
 interface PageProps {
@@ -135,6 +149,10 @@ export default function CustomerRequestDetailPage({ params }: PageProps) {
     day: 'numeric',
     year: 'numeric',
   });
+  const proposal = request.proposals?.[0];
+  const proposalDeliverables = proposal && Array.isArray(proposal.deliverables)
+    ? proposal.deliverables.filter((item): item is string => typeof item === 'string')
+    : [];
 
   return (
     <div className="space-y-8 pb-16">
@@ -232,6 +250,34 @@ export default function CustomerRequestDetailPage({ params }: PageProps) {
               </div>
             </div>
           </div>
+
+          {proposal && (
+            <div className="rounded-3xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/80 via-white/80 to-purple-50/70 p-6 backdrop-blur-xl shadow-[0_8px_30px_rgba(79,70,229,0.08)]">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                <div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white/80 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-[#4F46E5]">
+                    <FileText size={12} /> Proposal ready
+                  </span>
+                  <h2 className="mt-3 text-xl font-extrabold tracking-tight text-[#141413]">{proposal.title}</h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-neutral-600">{proposal.summary}</p>
+                </div>
+                <div className="shrink-0 rounded-2xl border border-white bg-white/80 px-4 py-3 text-left shadow-xs sm:text-right">
+                  <p className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-400">Project fee</p>
+                  <p className="mt-1 text-2xl font-extrabold tracking-tight text-[#141413]">{proposal.currency} {proposal.price}</p>
+                </div>
+              </div>
+              <div className="mt-5 grid gap-3 border-t border-indigo-100/80 pt-4 text-xs text-neutral-600 sm:grid-cols-3">
+                {proposal.timeline && <div><span className="font-bold text-neutral-900">Timeline</span><br />{proposal.timeline}</div>}
+                {proposal.revisionLimit !== null && proposal.revisionLimit !== undefined && <div><span className="font-bold text-neutral-900">Revisions</span><br />{proposal.revisionLimit} included</div>}
+                {proposal.expiresAt && <div><span className="font-bold text-neutral-900">Valid until</span><br />{new Date(proposal.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>}
+              </div>
+              {proposalDeliverables.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {proposalDeliverables.map((deliverable) => <span key={deliverable} className="rounded-lg border border-indigo-100 bg-white/75 px-2.5 py-1.5 text-[11px] font-semibold text-neutral-700">{deliverable}</span>)}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Brief Overview */}
           <div className="rounded-3xl border border-white/80 bg-white/75 p-7 backdrop-blur-xl shadow-[0_8px_30px_rgba(20,20,19,0.04)] space-y-6">

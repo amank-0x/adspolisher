@@ -16,7 +16,8 @@ app.use(cors({
             "http://127.0.0.1:3000",
             "http://localhost:5173",
             "http://127.0.0.1:5173",
-            "https://www.adspolisher.com"
+            "https://www.adspolisher.com",
+            "https://adspolisher.com"
         ]);
         
         if (!origin || allowedOrigins.has(origin)) {

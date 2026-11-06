@@ -1,4 +1,4 @@
 declare module "*.js" {
-  const renderTemplate: (...args: string[]) => string;
+  const renderTemplate: (...args: unknown[]) => string;
   export default renderTemplate;
 }

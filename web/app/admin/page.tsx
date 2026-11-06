@@ -55,9 +55,19 @@ interface AdminOverviewData {
     source?: string | null;
     status: string;
     createdAt: string;
-    attachments?: any;
+    attachments?: {
+      serviceNeeded?: string;
+      projectTitle?: string;
+    } | null;
   }>;
-  activeProjects: any[];
+  activeProjects: Array<{
+    id: string;
+    projectCode: string;
+    title: string;
+    status: string;
+    budget?: string | number | null;
+    dueDate?: string | null;
+  }>;
   serverTime: string;
 }
 
@@ -65,8 +75,8 @@ const DEFAULT_DATA: AdminOverviewData = {
   counts: {
     newRequests: 3,
     inReviewRequests: 1,
-    proposalsPending: 3,
-    activeProjects: 4,
+    proposalsPending: 0,
+    activeProjects: 0,
     totalRequests: 7,
     unreadNotifications: 3,
   },

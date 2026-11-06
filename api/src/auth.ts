@@ -68,6 +68,7 @@ export const auth = betterAuth({
     "http://127.0.0.1:3000",
     process.env.NEXT_APP_URL,
     "https://www.adspolisher.com",
+    "https://adspolisher.com",
     ...((process.env.WEB_ORIGIN || "").split(",").map((origin) => origin.trim()).filter(Boolean)),
   ].filter((origin): origin is string => Boolean(origin)),
 });

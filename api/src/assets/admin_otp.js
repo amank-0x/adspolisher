@@ -188,7 +188,7 @@ export default function getAdminOtpHtml(userName, otp, purpose = "sign-in") {
                             <!-- Footer -->
                             <tr>
                                 <td class="px" align="left" style="padding:36px 40px 0 40px; font-size:12px; line-height:1.7; color:#80868B;">
-                                    <span style="color:#8A8A8A; font-weight:500;">View</span><span style="color:#000000; font-weight:700;">Galaxies</span><br>
+                                    <span style="color:#000000; font-weight:700;">AdsPolisher</span><br>
                                     ${isPasswordReset ? "You are receiving this email because a password reset was requested for your account." : "You are receiving this email because a sign-in to the administrator console was requested for your account."}<br>
                                     &copy; ${new Date().getFullYear()} AdsPolisher. All rights reserved.<br>
                                     This is an automated security message, please do not reply.

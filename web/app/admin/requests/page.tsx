@@ -24,6 +24,7 @@ import {
   ArrowLeft,
   Check,
 } from "lucide-react";
+import ProposalComposer from "@/components/admin/ProposalComposer";
 
 type RequestStatus =
   | "ALL"
@@ -73,6 +74,7 @@ export default function AdminRequestsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [proposalRequest, setProposalRequest] = useState<DBRequest | null>(null);
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -166,6 +168,19 @@ export default function AdminRequestsPage() {
           <CheckCircle2 size={16} className="text-emerald-400" />
           <span>{successToast}</span>
         </div>
+      )}
+
+      {proposalRequest && (
+        <ProposalComposer
+          request={proposalRequest}
+          onClose={() => setProposalRequest(null)}
+          onComplete={(message) => {
+            setProposalRequest(null);
+            setSuccessToast(message);
+            void fetchRequests();
+            setTimeout(() => setSuccessToast(null), 3500);
+          }}
+        />
       )}
 
       {/* Header */}
@@ -428,13 +443,14 @@ export default function AdminRequestsPage() {
                         <ExternalLink size={12} />
                       </Link>
 
-                      <a
-                        href={`mailto:${req.email}?subject=Regarding your AdsPolisher Brief: ${encodeURIComponent(att.projectTitle || req.companyName || 'Campaign')}`}
+                      <button
+                        type="button"
+                        onClick={() => setProposalRequest(req)}
                         className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#6366F1] py-2 text-xs font-bold text-white shadow-xs hover:scale-[1.01] transition"
                       >
                         <Mail size={12} />
-                        <span>Email Proposal Quote</span>
-                      </a>
+                        <span>Build &amp; send proposal</span>
+                      </button>
                     </div>
                   </div>
                 </div>

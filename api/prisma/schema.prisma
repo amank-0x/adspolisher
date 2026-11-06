@@ -22,6 +22,16 @@ enum QuoteStatus {
   ARCHIVED
 }
 
+enum ProposalStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  WITHDRAWN
+}
+
 enum ProjectStatus {
   INTAKE
   PLANNED
@@ -86,6 +96,7 @@ model User {
   clientProjects       Project[]         @relation("ProjectClient")
   assignedProjects     Project[]         @relation("ProjectAssignee")
   assignedQuotes       QuoteRequest[]    @relation("QuoteAssignee")
+  createdProposals     Proposal[]       @relation("ProposalCreator")
   sentInvitations      StaffInvitation[] @relation("InvitationSender")
   acceptedInvitations  StaffInvitation[] @relation("InvitationAcceptedBy")
   projectMessages      ProjectMessage[]
@@ -215,6 +226,7 @@ model QuoteRequest {
   assignedToId String?
   assignedTo   User?           @relation("QuoteAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
   project      Project?
+  proposals    Proposal[]
 
   source    String?
   createdAt DateTime @default(now())
@@ -224,6 +236,34 @@ model QuoteRequest {
   @@index([email])
   @@index([userId, createdAt])
   @@index([assignedToId, status])
+}
+
+model Proposal {
+  id             String         @id @default(cuid())
+  quoteRequestId String
+  quoteRequest   QuoteRequest   @relation(fields: [quoteRequestId], references: [id], onDelete: Cascade)
+  createdById    String
+  createdBy      User           @relation("ProposalCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  title          String
+  summary        String         @db.Text
+  deliverables   Json?
+  price          Decimal        @db.Decimal(10, 2)
+  currency       String         @default("USD") @db.VarChar(3)
+  timeline       String?
+  revisionLimit  Int?
+  paymentTerms   String?        @db.Text
+  expiresAt      DateTime?
+  status         ProposalStatus @default(DRAFT)
+  sentAt         DateTime?
+  viewedAt       DateTime?
+  acceptedAt     DateTime?
+  declinedAt     DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([quoteRequestId, createdAt])
+  @@index([status, createdAt])
+  @@index([createdById, createdAt])
 }
 
 // ------------------------------------

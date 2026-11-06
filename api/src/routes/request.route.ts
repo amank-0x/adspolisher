@@ -5,6 +5,7 @@ import { auth } from "../auth.js";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "../types/index.js";
 import type { QuoteStatus } from "@prisma/client";
+import { requireAdmin } from "../middleware/requireAdmin.js";
 
 const requestRouter: Router = Router();
 
@@ -231,12 +232,13 @@ requestRouter.get("/my", async (req: Request, res: Response) => {
 });
 
 // GET /api/v1/requests/admin/overview - Aggregated data for admin overview & notifications
-requestRouter.get("/admin/overview", async (req: Request, res: Response) => {
+requestRouter.get("/admin/overview", requireAdmin, async (req: Request, res: Response) => {
   try {
     const [
       newRequestsCount,
       inReviewRequestsCount,
       totalRequestsCount,
+      proposalsPendingCount,
       activeProjectsCount,
       recentRequests,
       activeProjects,
@@ -247,6 +249,7 @@ requestRouter.get("/admin/overview", async (req: Request, res: Response) => {
           where: { status: { in: ["IN_REVIEW", "NEEDS_INFORMATION"] } },
         }),
         prismaClient.quoteRequest.count(),
+        prismaClient.proposal.count({ where: { status: { in: ["SENT", "VIEWED"] } } }),
         prismaClient.project.count({
           where: { status: { notIn: ["COMPLETED", "CANCELLED"] } },
         }),
@@ -307,7 +310,7 @@ requestRouter.get("/admin/overview", async (req: Request, res: Response) => {
         counts: {
           newRequests: newRequestsCount,
           inReviewRequests: inReviewRequestsCount,
-          proposalsPending: 3, // placeholder or proposals count
+          proposalsPending: proposalsPendingCount,
           activeProjects: activeProjectsCount,
           totalRequests: totalRequestsCount,
           unreadNotifications: newRequestsCount,
@@ -441,7 +444,7 @@ requestRouter.get("/client/overview", async (req: Request, res: Response) => {
 });
 
 // GET /api/v1/requests/all - Admin query all requests with filters
-requestRouter.get("/all", async (req: Request, res: Response) => {
+requestRouter.get("/all", requireAdmin, async (req: Request, res: Response) => {
   try {
     const status = req.query.status as string;
     const search = req.query.search as string;
@@ -500,7 +503,7 @@ requestRouter.get("/all", async (req: Request, res: Response) => {
 });
 
 // PATCH /api/v1/requests/:id - Update status or notes of a request
-requestRouter.patch("/:id", async (req: Request, res: Response) => {
+requestRouter.patch("/:id", requireAdmin, async (req: Request, res: Response) => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   if (!id) {
     return res.status(400).json({ success: false, message: "ID is required" });
@@ -556,6 +559,25 @@ requestRouter.get("/:id", async (req: Request, res: Response) => {
         where: { id },
         include: {
           project: true,
+        proposals: {
+          where: { status: { in: ["SENT", "VIEWED", "ACCEPTED"] } },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: {
+            id: true,
+            title: true,
+            summary: true,
+            deliverables: true,
+            price: true,
+            currency: true,
+            timeline: true,
+            revisionLimit: true,
+            paymentTerms: true,
+            expiresAt: true,
+            status: true,
+            sentAt: true,
+          },
+        },
           user: {
             select: {
               id: true,
