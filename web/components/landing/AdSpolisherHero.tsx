@@ -259,7 +259,7 @@ export default function AdSpolisherHero() {
 
       <a
         className="whatsapp-pill"
-        href="https://wa.me/8051401448"
+        href="https://wa.me/918051401448"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Connect with AdsPolisher on WhatsApp"
