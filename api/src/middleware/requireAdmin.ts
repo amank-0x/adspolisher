@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { auth } from "../auth.js";
+import prismaClient from "../config/db.js";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "../types/index.js";
 
@@ -26,12 +27,18 @@ export async function requireAdmin(
     const session = await auth.api.getSession({
       headers: toBetterAuthHeaders(req),
     });
-    const appRole = String(session?.user?.appRole ?? "").toUpperCase();
-
-    if (session?.user && appRole === "ADMIN") {
-      res.locals.adminUserId = session.user.id;
-      res.locals.adminUser = session.user;
-      return next();
+    if (session?.user?.id) {
+      // Session additional fields can be stale or missing after a role change.
+      // The database role is authoritative for protected admin APIs.
+      const currentUser = await prismaClient.user.findUnique({
+        where: { id: session.user.id },
+        select: { id: true, name: true, email: true, appRole: true },
+      });
+      if (currentUser?.appRole === "ADMIN") {
+        res.locals.adminUserId = currentUser.id;
+        res.locals.adminUser = currentUser;
+        return next();
+      }
     }
 
     // Fallback: Check token in cookie / header
@@ -42,11 +49,16 @@ export async function requireAdmin(
     if (rawToken && process.env.USER_SECRET) {
       try {
         const decoded = jwt.verify(rawToken, process.env.USER_SECRET) as any;
-        const decodedRole = String(decoded?.role || decoded?.appRole || "").toUpperCase();
-        if (decoded?.id && decodedRole === "ADMIN") {
-          res.locals.adminUserId = decoded.id;
-          res.locals.adminUser = decoded;
-          return next();
+        if (decoded?.id) {
+          const currentUser = await prismaClient.user.findUnique({
+            where: { id: decoded.id },
+            select: { id: true, name: true, email: true, appRole: true },
+          });
+          if (currentUser?.appRole === "ADMIN") {
+            res.locals.adminUserId = currentUser.id;
+            res.locals.adminUser = currentUser;
+            return next();
+          }
         }
       } catch {
         // Token verify failed
