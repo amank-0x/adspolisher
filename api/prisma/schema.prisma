@@ -108,6 +108,7 @@ model User {
   acceptedInvitations  StaffInvitation[] @relation("InvitationAcceptedBy")
   projectMessages      ProjectMessage[]
   uploadedDeliverables Deliverable[]     @relation("DeliverableUploader")
+  projectMemberships   ProjectTeamMember[]
   auditLogs            AuditLog[]
 }
 
@@ -328,12 +329,27 @@ model Project {
 
   messages     ProjectMessage[]
   deliverables Deliverable[]
+  teamMembers  ProjectTeamMember[]
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
   @@index([clientId, updatedAt])
   @@index([status, dueDate])
   @@index([assignedToId, status])
+}
+
+model ProjectTeamMember {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleTitle String?  @default("Creator")
+  joinedAt  DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
 }
 
 model ProjectMessage {

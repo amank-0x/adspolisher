@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react'
 import { requestPasswordReset } from '@/lib/auth-api'
 
 function ForgotPasswordForm() {
@@ -80,9 +80,27 @@ function ForgotPasswordForm() {
           )}
 
           {sent ? (
-            <div className="rounded-xl border border-green-200 bg-green-50 p-3.5 text-sm leading-6 text-green-800" role="status">
-              If an account matches that email, recovery instructions have been sent. Check your inbox. Admins and creators can enter their one-time code on the reset screen.
-              <Link href={`/auth/reset-password?email=${encodeURIComponent(email.trim())}`} className="mt-3 inline-block font-semibold text-blue-700 hover:text-blue-800">Continue to password reset</Link>
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/90 p-5 text-sm leading-relaxed text-emerald-900" role="status">
+              <div className="flex items-center gap-2.5 font-bold text-emerald-950">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                <span>Password reset link sent!</span>
+              </div>
+              <p className="mt-2 text-emerald-850">
+                If an account matches <strong className="font-semibold text-emerald-950">{email.trim()}</strong>, we have sent a secure password reset link to your email address.
+              </p>
+              <p className="mt-2 text-xs text-emerald-700">
+                Please check your inbox (and your spam or junk folder) and click the link in the email to set a new password.
+              </p>
+              <div className="mt-4 pt-3 border-t border-emerald-200/70 flex items-center justify-between text-xs">
+                <span className="text-emerald-700">Didn&apos;t receive it?</span>
+                <button
+                  type="button"
+                  onClick={() => setSent(false)}
+                  className="font-bold text-emerald-900 hover:text-emerald-950 underline"
+                >
+                  Resend or change email
+                </button>
+              </div>
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-5">

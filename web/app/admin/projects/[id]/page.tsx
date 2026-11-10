@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
   Calendar,
   CheckCircle2,
   Clock,
@@ -90,6 +91,18 @@ type ProjectDetail = {
     appRole: string;
   } | null;
   deliverables: Deliverable[];
+  teamMembers?: {
+    id: string;
+    roleTitle: string | null;
+    joinedAt: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      image: string | null;
+      appRole: string;
+    };
+  }[];
   quoteRequest?: {
     id: string;
     status: string;
@@ -1196,6 +1209,56 @@ export default function AdminProjectDetailPage({
                 {savingDetails ? "Saving Changes…" : "Save Project Settings"}
               </button>
             </form>
+          </section>
+
+          {/* Project Creative Pod Team */}
+          <section className="rounded-3xl border border-black/[0.08] bg-white/85 p-6 shadow-sm backdrop-blur-xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-neutral-900">Project Creative Pod</h2>
+              <Link
+                href={`/admin/team?projectId=${project.id}`}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#4F46E5] hover:underline"
+              >
+                Assemble Team <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <p className="mt-1 text-xs text-neutral-500">
+              Creators assigned to execute and deliver this contract.
+            </p>
+
+            <div className="mt-4 space-y-2">
+              {project.teamMembers && project.teamMembers.length > 0 ? (
+                project.teamMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between rounded-xl border border-black/[0.05] bg-white p-2.5 text-xs shadow-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#4F46E5]/10 font-bold text-[#4F46E5]">
+                        {(member.user.name || member.user.email).charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-bold text-neutral-900">{member.user.name || "Creator"}</p>
+                        <p className="text-[10px] text-neutral-500">{member.roleTitle || "Creator"}</p>
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-purple-50 border border-purple-200 px-2 py-0.5 text-[9px] font-bold text-purple-700">
+                      CREATOR
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-xl border border-dashed border-black/10 bg-neutral-50/50 p-4 text-center">
+                  <p className="text-xs text-neutral-500">No creators in pod yet.</p>
+                  <Link
+                    href={`/admin/team?projectId=${project.id}`}
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:underline"
+                  >
+                    + Build Team Pod
+                  </Link>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Client Details Card */}

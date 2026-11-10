@@ -82,18 +82,24 @@ adminCreatorApplicationRouter.get("/", requireAdmin, async (req: Request, res: R
       : undefined;
     const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
 
+    const where: any = {};
+    if (status && ["PENDING", "APPROVED", "REJECTED"].includes(status)) {
+      where.status = status as "PENDING" | "APPROVED" | "REJECTED";
+    } else {
+      where.status = "PENDING";
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { email: { contains: search, mode: "insensitive" } },
+        { craftSpecialty: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
     const applications = await withDatabaseRetry(() =>
       prismaClient.creatorApplication.findMany({
-        where: {
-          ...(status && ["PENDING", "APPROVED", "REJECTED"].includes(status) ? { status: status as "PENDING" | "APPROVED" | "REJECTED" } : {}),
-          ...(search ? {
-            OR: [
-              { name: { contains: search, mode: "insensitive" } },
-              { email: { contains: search, mode: "insensitive" } },
-              { craftSpecialty: { contains: search, mode: "insensitive" } },
-            ],
-          } : {}),
-        },
+        where,
         orderBy: { createdAt: "desc" },
         include: {
           reviewedBy: { select: { id: true, name: true, email: true } },
@@ -151,20 +157,21 @@ adminCreatorApplicationRouter.patch("/:id", requireAdmin, async (req: Request, r
         }
       }
 
-      const updatedApplication = parsed.data.status === "REJECTED"
-        ? await transaction.creatorApplication.delete({ where: { id } })
-        : await transaction.creatorApplication.update({
-        where: { id },
-        data: {
-          status: parsed.data.status,
-          reviewNotes: parsed.data.reviewNotes ?? null,
-          reviewedAt,
-          reviewedById: adminUserId,
-        },
-        include: {
-          reviewedBy: { select: { id: true, name: true, email: true } },
-        },
-      });
+      const updatedApplication =
+        parsed.data.status === "REJECTED" || parsed.data.status === "APPROVED"
+          ? await transaction.creatorApplication.delete({ where: { id } })
+          : await transaction.creatorApplication.update({
+              where: { id },
+              data: {
+                status: parsed.data.status,
+                reviewNotes: parsed.data.reviewNotes ?? null,
+                reviewedAt,
+                reviewedById: adminUserId,
+              },
+              include: {
+                reviewedBy: { select: { id: true, name: true, email: true } },
+              },
+            });
 
       await transaction.auditLog.create({
         data: {
@@ -200,12 +207,12 @@ adminCreatorApplicationRouter.patch("/:id", requireAdmin, async (req: Request, r
     return res.json({
       success: true,
       message: parsed.data.status === "APPROVED"
-        ? emailSent ? "Application approved, creator access granted, and welcome email sent." : "Application approved and creator access granted, but the welcome email could not be sent."
+        ? emailSent ? "Application approved, creator access granted, and removed from application queue." : "Application approved and creator access granted, but the welcome email could not be sent."
         : parsed.data.status === "REJECTED"
           ? emailSent ? "Application rejected and notification email sent." : "Application rejected, but the notification email could not be sent."
           : "Application moved back to pending.",
       emailSent,
-      data: parsed.data.status === "REJECTED" ? null : result,
+      data: parsed.data.status === "REJECTED" || parsed.data.status === "APPROVED" ? null : result,
     });
   } catch (error) {
     console.error("[ADMIN CREATOR APPLICATION REVIEW ERROR]", error);

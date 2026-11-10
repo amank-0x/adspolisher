@@ -131,7 +131,22 @@ projectRouter.get("/", requireAdmin, async (req: Request, res: Response) => {
             select: {
               deliverables: true,
               messages: true,
+              teamMembers: true,
             },
+          },
+          teamMembers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                  appRole: true,
+                },
+              },
+            },
+            orderBy: { joinedAt: "asc" },
           },
         },
       })
@@ -205,9 +220,25 @@ projectRouter.get("/:id", requireAdmin, async (req: Request, res: Response) => {
               createdAt: true,
             },
           },
+          teamMembers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                  appRole: true,
+                },
+              },
+            },
+            orderBy: { joinedAt: "asc" },
+          },
           _count: {
             select: {
               messages: true,
+              deliverables: true,
+              teamMembers: true,
             },
           },
         },
@@ -514,5 +545,395 @@ projectRouter.delete(
     }
   }
 );
+
+// ----------------------------------------------------
+// PROJECT TEAM MANAGEMENT (ROLE: CREATOR)
+// ----------------------------------------------------
+
+const addTeamMemberSchema = z.object({
+  userId: z.string().trim().min(1, "User ID is required"),
+  roleTitle: z.string().trim().optional().default("Creator"),
+});
+
+const updateTeamMemberSchema = z.object({
+  roleTitle: z.string().trim().min(1, "Role title is required"),
+});
+
+const inviteCreatorSchema = z.object({
+  email: z.string().trim().email("Valid email is required"),
+  name: z.string().trim().optional().default("Creator"),
+});
+
+/**
+ * GET /api/v1/projects/roster/creators - Get all agency creators with their assigned project workload
+ */
+projectRouter.get("/roster/creators", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const creators = await withDatabaseRetry(() =>
+      prismaClient.user.findMany({
+        where: { appRole: "CREATOR" },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          appRole: true,
+          createdAt: true,
+          projectMemberships: {
+            include: {
+              project: {
+                select: {
+                  id: true,
+                  projectCode: true,
+                  title: true,
+                  status: true,
+                  dueDate: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { name: "asc" },
+      })
+    );
+
+    return res.json({ success: true, data: creators });
+  } catch (error: any) {
+    console.error("[GET CREATORS ROSTER ERROR]", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load creator roster.",
+      error: error?.message,
+    });
+  }
+});
+
+/**
+ * POST /api/v1/projects/roster/creators - Add/promote a creator to the agency roster
+ */
+projectRouter.post("/roster/creators", requireAdmin, async (req: Request, res: Response) => {
+  const parseResult = inviteCreatorSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: parseResult.error.flatten().fieldErrors,
+    });
+  }
+
+  const { email, name } = parseResult.data;
+
+  try {
+    const user = await withDatabaseRetry(() =>
+      prismaClient.user.upsert({
+        where: { email },
+        update: {
+          appRole: "CREATOR",
+          ...(name ? { name } : {}),
+        },
+        create: {
+          email,
+          name: name || email.split("@")[0] || "Creator",
+          appRole: "CREATOR",
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          appRole: true,
+        },
+      })
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: `${user.name || user.email} is now registered with the CREATOR role.`,
+      data: user,
+    });
+  } catch (error: any) {
+    console.error("[ADD CREATOR TO ROSTER ERROR]", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add creator to roster.",
+      error: error?.message,
+    });
+  }
+});
+
+/**
+ * GET /api/v1/projects/:id/team - Get all team members for a specific project
+ */
+projectRouter.get("/:id/team", requireAdmin, async (req: Request, res: Response) => {
+  const rawId = req.params.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  if (!id) {
+    return res.status(400).json({ success: false, message: "Project ID is required." });
+  }
+
+  try {
+    const project = await withDatabaseRetry(() =>
+      prismaClient.project.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          projectCode: true,
+          title: true,
+          status: true,
+          assignedToId: true,
+          teamMembers: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  image: true,
+                  appRole: true,
+                },
+              },
+            },
+            orderBy: { joinedAt: "asc" },
+          },
+        },
+      })
+    );
+
+    if (!project) {
+      return res.status(404).json({ success: false, message: "Project not found." });
+    }
+
+    return res.json({ success: true, data: project });
+  } catch (error: any) {
+    console.error("[GET PROJECT TEAM ERROR]", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load project team.",
+      error: error?.message,
+    });
+  }
+});
+
+/**
+ * POST /api/v1/projects/:id/team - Add a creator member to the project team
+ */
+projectRouter.post("/:id/team", requireAdmin, async (req: Request, res: Response) => {
+  const rawId = req.params.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  if (!id) {
+    return res.status(400).json({ success: false, message: "Project ID is required." });
+  }
+
+  const parseResult = addTeamMemberSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: parseResult.error.flatten().fieldErrors,
+    });
+  }
+
+  const { userId, roleTitle } = parseResult.data;
+
+  try {
+    // 1. Verify project exists
+    const project = await prismaClient.project.findUnique({ where: { id } });
+    if (!project) {
+      return res.status(404).json({ success: false, message: "Project not found." });
+    }
+
+    // 2. Verify user exists and check that appRole === 'CREATOR'
+    const user = await prismaClient.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    if (user.appRole !== "CREATOR") {
+      return res.status(400).json({
+        success: false,
+        message: `Only users with the role of "CREATOR" can be added to the project creative pod. (User ${user.name || user.email} has role "${user.appRole}")`,
+      });
+    }
+
+    // 3. Upsert team member
+    const teamMember = await withDatabaseRetry(() =>
+      prismaClient.projectTeamMember.upsert({
+        where: {
+          projectId_userId: {
+            projectId: id,
+            userId,
+          },
+        },
+        update: {
+          roleTitle: roleTitle || "Creator",
+        },
+        create: {
+          projectId: id,
+          userId,
+          roleTitle: roleTitle || "Creator",
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              appRole: true,
+            },
+          },
+        },
+      })
+    );
+
+    // 4. If project currently has no assignedTo, set this creator as primary assignee
+    if (!project.assignedToId) {
+      await prismaClient.project.update({
+        where: { id },
+        data: { assignedToId: userId },
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: `${user.name || user.email} was added to the project creative pod as ${roleTitle || "Creator"}.`,
+      data: teamMember,
+    });
+  } catch (error: any) {
+    console.error("[ADD TEAM MEMBER ERROR]", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add member to team.",
+      error: error?.message,
+    });
+  }
+});
+
+/**
+ * PATCH /api/v1/projects/:id/team/:userId - Update team member role/discipline title
+ */
+projectRouter.patch("/:id/team/:userId", requireAdmin, async (req: Request, res: Response) => {
+  const rawId = req.params.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  const rawUserId = req.params.userId;
+  const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId;
+
+  if (!id || !userId) {
+    return res.status(400).json({ success: false, message: "Project and User IDs are required." });
+  }
+
+  const parseResult = updateTeamMemberSchema.safeParse(req.body);
+  if (!parseResult.success) {
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: parseResult.error.flatten().fieldErrors,
+    });
+  }
+
+  try {
+    const existing = await prismaClient.projectTeamMember.findUnique({
+      where: {
+        projectId_userId: { projectId: id, userId },
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Team member not found on this project." });
+    }
+
+    const updated = await withDatabaseRetry(() =>
+      prismaClient.projectTeamMember.update({
+        where: { id: existing.id },
+        data: { roleTitle: parseResult.data.roleTitle },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              appRole: true,
+            },
+          },
+        },
+      })
+    );
+
+    return res.json({
+      success: true,
+      message: "Team member role updated successfully.",
+      data: updated,
+    });
+  } catch (error: any) {
+    console.error("[PATCH TEAM MEMBER ERROR]", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update team member role.",
+      error: error?.message,
+    });
+  }
+});
+
+/**
+ * DELETE /api/v1/projects/:id/team/:userId - Remove a creator member from the project team
+ */
+projectRouter.delete("/:id/team/:userId", requireAdmin, async (req: Request, res: Response) => {
+  const rawId = req.params.id;
+  const id = Array.isArray(rawId) ? rawId[0] : rawId;
+  const rawUserId = req.params.userId;
+  const userId = Array.isArray(rawUserId) ? rawUserId[0] : rawUserId;
+
+  if (!id || !userId) {
+    return res.status(400).json({ success: false, message: "Project and User IDs are required." });
+  }
+
+  try {
+    const existing = await prismaClient.projectTeamMember.findUnique({
+      where: {
+        projectId_userId: { projectId: id, userId },
+      },
+      include: {
+        user: { select: { name: true, email: true } },
+      },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: "Team member not found on this project." });
+    }
+
+    await withDatabaseRetry(() =>
+      prismaClient.projectTeamMember.delete({
+        where: { id: existing.id },
+      })
+    );
+
+    // If this creator was also project.assignedToId, update to another member or null
+    const project = await prismaClient.project.findUnique({
+      where: { id },
+      include: { teamMembers: { take: 1 } },
+    });
+
+    if (project && project.assignedToId === userId) {
+      const nextAssigneeId = project.teamMembers[0]?.userId || null;
+      await prismaClient.project.update({
+        where: { id },
+        data: { assignedToId: nextAssigneeId },
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `${existing.user.name || existing.user.email} was removed from the project team.`,
+    });
+  } catch (error: any) {
+    console.error("[DELETE TEAM MEMBER ERROR]", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to remove member from team.",
+      error: error?.message,
+    });
+  }
+});
 
 export default projectRouter;

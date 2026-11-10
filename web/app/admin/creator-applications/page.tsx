@@ -25,10 +25,7 @@ interface CreatorApplication {
 }
 
 const tabs: { id: FilterStatus; label: string }[] = [
-  { id: "ALL", label: "All" },
-  { id: "PENDING", label: "Pending" },
-  { id: "APPROVED", label: "Approved" },
-  { id: "REJECTED", label: "Rejected" },
+  { id: "ALL", label: "Pending Applications" },
 ];
 
 function statusStyles(status: ApplicationStatus) {
@@ -99,9 +96,13 @@ export default function AdminCreatorApplicationsPage() {
       });
       const data = await response.json().catch(() => null);
       if (!response.ok || !data?.success) throw new Error(data?.message || "Could not update this application.");
-      setApplications((current) => current.map((item) => item.id === application.id ? data.data : item));
-      setToast(data.message || (status === "APPROVED" ? "Creator access granted." : status === "REJECTED" ? "Application rejected." : "Application moved to pending."));
-      window.setTimeout(() => setToast(null), 3000);
+      if (status === "APPROVED" || status === "REJECTED") {
+        setApplications((current) => current.filter((item) => item.id !== application.id));
+      } else {
+        setApplications((current) => current.map((item) => item.id === application.id ? data.data : item));
+      }
+      setToast(data?.message || (status === "APPROVED" ? "Creator access granted and removed from queue." : "Application rejected and removed."));
+      window.setTimeout(() => setToast(null), 3500);
     } catch (reviewError) {
       setError(reviewError instanceof Error ? reviewError.message : "Could not update this application.");
     } finally {
@@ -135,7 +136,18 @@ export default function AdminCreatorApplicationsPage() {
       </div>
 
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
-      {loading ? <div className="rounded-2xl border border-black/[0.06] bg-white/70 p-10 text-center text-sm text-neutral-500">Loading creator applications…</div> : visibleApplications.length === 0 ? <div className="rounded-2xl border border-dashed border-black/10 bg-white/50 p-12 text-center"><p className="font-semibold text-neutral-800">No creator applications found</p><p className="mt-1 text-sm text-neutral-500">New submissions will appear here automatically after they are saved.</p></div> : (
+      {loading ? (
+        <div className="rounded-2xl border border-black/[0.06] bg-white/70 p-10 text-center text-sm text-neutral-500">
+          Loading creator applications…
+        </div>
+      ) : visibleApplications.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-black/10 bg-white/50 p-12 text-center">
+          <p className="font-semibold text-neutral-800">No pending creator applications</p>
+          <p className="mt-1 text-sm text-neutral-500">
+            All submitted applications have been reviewed. When new creators apply, they will appear here.
+          </p>
+        </div>
+      ) : (
         <div className="grid gap-5 xl:grid-cols-2">
           {visibleApplications.map((application) => (
             <article key={application.id} className="rounded-2xl border border-black/[0.07] bg-white/80 p-5 shadow-sm backdrop-blur-md">
