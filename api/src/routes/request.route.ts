@@ -14,7 +14,11 @@ requestRouter.get("/projects", requireAdmin, async (_req: Request, res: Response
   try {
     const projects = await prismaClient.project.findMany({
       orderBy: { createdAt: "desc" },
-      include: { client: { select: { name: true, email: true } } },
+      include: {
+        client: { select: { id: true, name: true, email: true, image: true } },
+        assignedTo: { select: { id: true, name: true, email: true, image: true, appRole: true } },
+        _count: { select: { deliverables: true, messages: true } },
+      },
     });
     return res.json({ success: true, data: projects });
   } catch (error) {
