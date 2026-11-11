@@ -185,16 +185,20 @@ model Service {
 
 model ServicePackage {
   id             String         @id @default(cuid())
-  serviceId      String
-  service        Service        @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId      String?
+  service        Service?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   name           String
-  slug           String
+  slug           String         @unique
+  tagline        String?
+  badge          String?
   description    String         @db.Text
   price          Decimal?       @db.Decimal(10, 2)
-  currency       String         @default("USD") @db.VarChar(3)
+  currency       String         @default("INR") @db.VarChar(3)
+  billingPeriod  String?        @default("one-time")
   deliverables   Json?
   turnaroundDays Int?
   revisionLimit  Int?
+  isPopular      Boolean        @default(false)
   isActive       Boolean        @default(true)
   sortOrder      Int            @default(0)
   quoteRequests  QuoteRequest[]
@@ -202,8 +206,8 @@ model ServicePackage {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
-  @@unique([serviceId, slug])
-  @@index([serviceId, isActive, sortOrder])
+  @@index([isActive, sortOrder])
+  @@index([serviceId])
 }
 
 // ------------------------------------

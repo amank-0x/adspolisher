@@ -41,8 +41,40 @@ export async function requireAdmin(
       }
     }
 
-    // Fallback: Check token in cookie / header
+    // Fallback: Check Better Auth session token directly in Prisma Session table
     const cookieHeader = req.headers.cookie || "";
+    const authHeader = req.headers.authorization || "";
+
+    const baTokenMatch = cookieHeader.match(/(?:better-auth\.session_token|__Secure-better-auth\.session_token|session_token)=([^;]+)/);
+    let potentialBaToken = baTokenMatch?.[1] ? decodeURIComponent(baTokenMatch[1]) : null;
+
+    if (!potentialBaToken && authHeader.toLowerCase().startsWith("bearer ")) {
+      potentialBaToken = authHeader.slice(7).trim();
+    }
+
+    if (potentialBaToken) {
+      const cleanToken = potentialBaToken.includes(".") ? potentialBaToken.split(".")[0] : potentialBaToken;
+      if (cleanToken) {
+        const dbSession = await prismaClient.session.findFirst({
+          where: { token: cleanToken },
+        });
+
+        if (dbSession && dbSession.expiresAt > new Date()) {
+          const currentUser = await prismaClient.user.findUnique({
+            where: { id: dbSession.userId },
+            select: { id: true, name: true, email: true, appRole: true },
+          });
+
+          if (currentUser?.appRole === "ADMIN") {
+            res.locals.adminUserId = currentUser.id;
+            res.locals.adminUser = currentUser;
+            return next();
+          }
+        }
+      }
+    }
+
+    // Fallback: Check JWT token in cookie / header
     const tokenMatch = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
     const matchedToken = tokenMatch?.[1];
     const rawToken = (req as any).cookies?.token || (matchedToken ? decodeURIComponent(matchedToken) : null);
