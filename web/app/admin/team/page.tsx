@@ -29,6 +29,7 @@ import {
   Mail,
   UserCheck,
 } from "lucide-react";
+import { backendFetch } from "@/lib/backend-api";
 
 type ProjectStatus =
   | "INTAKE"
@@ -148,8 +149,8 @@ function AdminTeamPageInner() {
   const loadData = async () => {
     try {
       const [projRes, creatorRes] = await Promise.all([
-        fetch("/api/admin/projects"),
-        fetch("/api/admin/team/roster"),
+        backendFetch("/api/v1/projects"),
+        backendFetch("/api/v1/projects/roster/creators"),
       ]);
 
       const [projData, creatorData] = await Promise.all([

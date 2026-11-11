@@ -19,6 +19,7 @@ import {
   Calendar,
   FileCheck2,
 } from "lucide-react";
+import { backendFetch } from "@/lib/backend-api";
 
 type ProjectStatus =
   | "INTAKE"
@@ -141,7 +142,7 @@ export default function AdminProjectsPage() {
 
   const loadProjects = async () => {
     try {
-      const res = await fetch("/api/admin/projects");
+      const res = await backendFetch("/api/v1/projects");
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setProjects(data.data);

@@ -23,6 +23,7 @@ import {
   ChevronRight,
   UserCheck,
 } from "lucide-react";
+import { backendFetch } from "@/lib/backend-api";
 
 type ProjectSummary = {
   id: string;
@@ -130,7 +131,7 @@ function AdminPortfolioInner() {
 
   const loadCreators = async () => {
     try {
-      const res = await fetch("/api/admin/portfolio");
+      const res = await backendFetch("/api/v1/admin/portfolio/creators");
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setCreators(data.data);
@@ -154,7 +155,7 @@ function AdminPortfolioInner() {
     setDetailTab("PROJECTS");
 
     try {
-      const res = await fetch(`/api/admin/portfolio/${creatorId}`);
+      const res = await backendFetch(`/api/v1/admin/portfolio/creators/${creatorId}`);
       const data = await res.json();
       if (data.success && data.data) {
         setPortfolioDetail(data.data);

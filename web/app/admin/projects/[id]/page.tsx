@@ -31,6 +31,7 @@ import {
   FileText,
   Building,
 } from "lucide-react";
+import { backendFetch } from "@/lib/backend-api";
 
 type ProjectStatus =
   | "INTAKE"
@@ -265,7 +266,7 @@ export default function AdminProjectDetailPage({
 
   const loadProject = async () => {
     try {
-      const res = await fetch(`/api/admin/projects/${projectId}`);
+      const res = await backendFetch(`/api/v1/projects/${projectId}`);
       const data = await res.json();
       if (data.success && data.data) {
         setProject(data.data);
@@ -290,7 +291,7 @@ export default function AdminProjectDetailPage({
 
   const loadCreators = async () => {
     try {
-      const res = await fetch("/api/admin/projects/creators");
+      const res = await backendFetch("/api/v1/projects/creators");
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setCreators(data.data);
