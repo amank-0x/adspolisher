@@ -164,7 +164,7 @@ creatorRouter.get("/portfolio", requireCreator, async (_req: Request, res: Respo
         completedAt: p.completedAt,
         joinedAt: m.joinedAt,
         clientName: p.client?.name || "Client Brand",
-        deliverablesCount: p._count.deliverables,
+        deliverablesCount: p._count?.deliverables || 0,
       });
     }
 
@@ -182,7 +182,7 @@ creatorRouter.get("/portfolio", requireCreator, async (_req: Request, res: Respo
         completedAt: p.completedAt,
         joinedAt: p.createdAt,
         clientName: p.client?.name || "Client Brand",
-        deliverablesCount: p._count.deliverables,
+        deliverablesCount: p._count?.deliverables || 0,
       });
     }
 
@@ -201,9 +201,9 @@ creatorRouter.get("/portfolio", requireCreator, async (_req: Request, res: Respo
       version: d.version,
       status: d.status,
       createdAt: d.createdAt,
-      projectCode: d.project.projectCode,
-      projectTitle: d.project.title,
-      projectId: d.project.id,
+      projectCode: d.project?.projectCode || "AP",
+      projectTitle: d.project?.title || "Asset",
+      projectId: d.project?.id || "",
     }));
 
     const approvedDeliverablesCount = deliverables.filter((d) => d.status === "APPROVED").length;
@@ -259,7 +259,16 @@ creatorRouter.get("/portfolio", requireCreator, async (_req: Request, res: Respo
               location: application.location,
               notes: application.notes,
             }
-          : null,
+          : {
+              craftSpecialty: "Creative Designer & Art Director",
+              primaryTools: "",
+              experienceLevel: "Mid-Level Specialist",
+              weeklyAvailability: "Flexible",
+              portfolioUrl: "",
+              secondaryUrl: null,
+              location: "Global Remote",
+              notes: null,
+            },
         stats: {
           totalProjects: allProjects.length,
           ongoingProjects: ongoingProjects.length,
@@ -353,6 +362,16 @@ creatorRouter.get("/profile", requireCreator, async (_req: Request, res: Respons
                 },
             }
           : {
+              id: null,
+              location: "Global Remote",
+              craftSpecialty: "Motion Graphics & 3D Ads",
+              primaryTools: "Figma, Adobe Suite",
+              experienceLevel: "Mid-Level Specialist (3–5 yrs)",
+              weeklyAvailability: "20–30 hrs/week (Dedicated half-time)",
+              portfolioUrl: "",
+              secondaryUrl: null,
+              notes: null,
+              status: "APPROVED",
               notificationPreferences: {
                 sprintInvites: true,
                 reviews: true,

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { creatorFetch } from "@/lib/creator-api";
+import { backendFetch } from "@/lib/backend-api";
 import {
   Sparkles,
   FolderKanban,
@@ -110,7 +110,7 @@ export default function CreatorPortfolioPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await creatorFetch("/portfolio", { cache: "no-store" });
+      const res = await backendFetch("/api/v1/creator/portfolio");
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.message || "Failed to load portfolio details.");

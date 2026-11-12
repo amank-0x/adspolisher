@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { creatorFetch } from "@/lib/creator-api";
+import { backendFetch } from "@/lib/backend-api";
 import {
   Users,
   Sparkles,
@@ -63,7 +63,7 @@ export default function CreatorProfilePage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await creatorFetch("/profile", { cache: "no-store" });
+      const res = await backendFetch("/api/v1/creator/profile");
       const json = await res.json();
       if (!res.ok || !json.success) {
         throw new Error(json.message || "Failed to load profile details.");

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { creatorFetch } from "@/lib/creator-api";
+import { backendFetch } from "@/lib/backend-api";
 import {
   Settings2,
   Lock,
@@ -121,7 +121,7 @@ function CreatorSettingsContent() {
   const loadProfileData = async () => {
     setLoading(true);
     try {
-      const res = await creatorFetch("/profile", { cache: "no-store" });
+      const res = await backendFetch("/api/v1/creator/profile");
       const json = await res.json();
       if (json.success && json.data) {
         const u = json.data.user;
@@ -174,7 +174,7 @@ function CreatorSettingsContent() {
     setProfileMsg(null);
 
     try {
-      const res = await creatorFetch("/profile", {
+      const res = await backendFetch("/api/v1/creator/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -210,7 +210,7 @@ function CreatorSettingsContent() {
     setAvatarLoading(true);
     setAvatarMsg(null);
     try {
-      const res = await creatorFetch("/settings/avatar", {
+      const res = await backendFetch("/api/v1/creator/settings/avatar", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageUrl: imageUrlToSave }),
@@ -250,7 +250,7 @@ function CreatorSettingsContent() {
 
     setPasswordLoading(true);
     try {
-      const res = await creatorFetch("/settings/password", {
+      const res = await backendFetch("/api/v1/creator/settings/password", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ currentPassword, newPassword }),
@@ -273,7 +273,7 @@ function CreatorSettingsContent() {
 
   const handleSavePreferences = async () => {
     try {
-      const res = await creatorFetch("/settings/notifications", {
+      const res = await backendFetch("/api/v1/creator/settings/notifications", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
