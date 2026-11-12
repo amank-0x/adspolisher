@@ -121,7 +121,21 @@ const ROLE_DETAILS: Record<
         label: "My work",
         items: [
           { label: "Overview", href: "/creator", icon: LayoutDashboard },
+          { label: "Project requests", href: "/creator/requests", icon: FileText, badge: "2" },
+          { label: "My projects", href: "/creator/projects", icon: FolderKanban },
           { label: "My tasks", href: "/creator/tasks", icon: ClipboardCheck, badge: "4" },
+          { label: "Submissions", href: "/creator/submissions", icon: Files },
+          { label: "Feedback & messages", href: "/creator/feedback", icon: MessageSquare },
+          { label: "My teams", href: "/creator/teams", icon: Users },
+        ],
+      },
+      { label: "Finance", items: [{ label: "Earnings", href: "/creator/earnings", icon: FileClock }] },
+      {
+        label: "Personal",
+        items: [
+          { label: "My portfolio", href: "/creator/portfolio", icon: Sparkles },
+          { label: "My profile", href: "/creator/profile", icon: Users },
+          { label: "Settings", href: "/creator/settings", icon: Settings2 },
         ],
       },
     ],
@@ -186,6 +200,12 @@ function pageTitle(pathname: string, role: DashboardRole) {
   if (pathname.startsWith("/dashboard/profile")) return "Profile";
   if (pathname.startsWith("/dashboard/settings")) return "Settings";
   if (pathname.startsWith("/account")) return "Account";
+  if (role === "CREATOR" && pathname.startsWith("/creator/")) {
+    const creatorItem = ROLE_DETAILS.CREATOR.groups
+      .flatMap((group) => group.items)
+      .find((entry) => entry.href !== "/creator" && pathname.startsWith(entry.href));
+    if (creatorItem) return creatorItem.label;
+  }
   const item = ROLE_DETAILS[role].groups
     .flatMap((group) => group.items)
     .find((entry) => entry.href !== ROLE_HOME[role] && pathname.startsWith(entry.href));

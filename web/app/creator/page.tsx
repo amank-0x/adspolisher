@@ -50,6 +50,10 @@ export default function CreatorDashboardPage() {
         </Link>
       </section>
 
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-xs leading-5 text-amber-800">
+        Preview dashboard: the tasks, activity, counts, and deadlines below are sample content. They are not connected to your live assignments yet.
+      </div>
+
       {/* Metric Tiles */}
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         {counts.map((item) => {
