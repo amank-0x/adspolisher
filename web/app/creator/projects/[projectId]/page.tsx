@@ -35,7 +35,7 @@ export default function CreatorProjectDetailPage() {
     setLoading(true);
     setError("");
     try {
-      const response = await backendFetch(`/api/v1/creator/projects/${encodeURIComponent(projectId)}`, { cache: "no-store" });
+      const response = await backendFetch(`/api/creator/projects/${encodeURIComponent(projectId)}`, { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok || !payload.success) throw new Error(payload.message || "Could not load project details.");
       setProject(payload.data);

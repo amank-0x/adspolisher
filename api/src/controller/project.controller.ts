@@ -324,6 +324,16 @@ export const getRoot = async (req: Request, res: Response) => {
               image: true,
             },
           },
+          quoteRequest: {
+            select: {
+              proposals: {
+                where: { status: "ACCEPTED" },
+                orderBy: { acceptedAt: "desc" },
+                take: 1,
+                select: { price: true, currency: true },
+              },
+            },
+          },
           assignedTo: {
             select: {
               id: true,

@@ -39,6 +39,9 @@ type Project = {
   status: ProjectStatus;
   budget: number | string | null;
   currency: string;
+  quoteRequest?: {
+    proposals: { price: string | number; currency: string }[];
+  } | null;
   dueDate: string | null;
   startDate: string | null;
   completedAt: string | null;
@@ -123,6 +126,16 @@ const STATUS_BADGES: Record<
     dot: "bg-rose-500",
   },
 };
+
+function formatProjectPrice(amount: string | number, currency: string) {
+  const value = Number(amount);
+  if (!Number.isFinite(value)) return `${currency} ${amount}`;
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value);
+  } catch {
+    return `${currency} ${value.toLocaleString()}`;
+  }
+}
 
 const FILTER_TABS: { key: string; label: string }[] = [
   { key: "ALL", label: "All Projects" },
@@ -317,6 +330,9 @@ export default function AdminProjectsPage() {
           {filteredProjects.map((project) => {
             const badge = STATUS_BADGES[project.status] || STATUS_BADGES.INTAKE;
             const deliverablesCount = project._count?.deliverables ?? 0;
+            const acceptedProposal = project.quoteRequest?.proposals?.[0];
+            const agreedPrice = project.budget ?? acceptedProposal?.price ?? null;
+            const agreedCurrency = acceptedProposal?.currency ?? project.currency;
 
             return (
               <article
@@ -348,6 +364,12 @@ export default function AdminProjectsPage() {
                   <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-neutral-600">
                     {project.brief}
                   </p>
+                  <div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3.5 py-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Agreed client price</p>
+                    <p className="mt-1 text-lg font-extrabold text-emerald-950">
+                      {agreedPrice !== null ? formatProjectPrice(agreedPrice, agreedCurrency) : "Not recorded"}
+                    </p>
+                  </div>
                 </div>
 
                 {/* Footer details */}
