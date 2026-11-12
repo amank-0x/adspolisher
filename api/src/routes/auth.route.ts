@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { resetPasswordWithLink, resetPasswordWithOtp, sendResetLink } from "../controller/auth.controller.js";
+import { resetPasswordWithLink, sendResetLink } from "../controller/auth.controller.js";
 import {
   forgotPasswordEmailLimiter,
   forgotPasswordIpLimiter,
@@ -17,6 +17,5 @@ authRouter.post(
 );
 
 authRouter.post("/reset-password", resetPasswordIpLimiter, resetPasswordWithLink);
-authRouter.post("/reset-password/otp", resetPasswordIpLimiter, resetPasswordWithOtp);
 
 export default authRouter;

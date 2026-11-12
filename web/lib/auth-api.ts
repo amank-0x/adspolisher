@@ -22,10 +22,6 @@ export function resetPasswordWithMagicLink(token: string, password: string) {
   return requestPasswordRecovery(`reset-password?token=${encodeURIComponent(token)}`, { password });
 }
 
-export function resetPasswordWithOtp(email: string, otp: string, password: string) {
-  return requestPasswordRecovery("reset-password/otp", { email, otp, password });
-}
-
 type EmailCredentials = {
   email: string;
   password: string;

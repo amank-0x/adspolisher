@@ -1,27 +1,13 @@
 import type { Request, Response } from "express";
 import { hashPassword } from "better-auth/crypto";
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import prismaClient from "../config/db.js";
 import jwt from "jsonwebtoken";
 import { sendEmailResetLink } from "../utils/sendEmailMagicLink.js";
-import { resetPasswordSchema, sendResetLinkSchema, resetPasswordOtpSchema } from "../types/auth.type.js";
-
-const OTP_MAX_ATTEMPTS = 5;
+import { resetPasswordSchema, sendResetLinkSchema } from "../types/auth.type.js";
 
 function resetSecret() {
     return process.env.MAGIC_LINK_SECRET || process.env.BETTER_AUTH_SECRET;
-}
-
-function otpDigest(email: string, otp: string) {
-    const secret = resetSecret();
-    if (!secret) throw new Error("Password recovery secret is not configured");
-    return createHmac("sha256", secret).update(`${email}:${otp}`).digest("hex");
-}
-
-function safeEqualHex(left: string, right: string) {
-    const leftBuffer = Buffer.from(left, "hex");
-    const rightBuffer = Buffer.from(right, "hex");
-    return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
 }
 
 async function setPassword(userId: string, password: string) {
@@ -125,46 +111,7 @@ async function resetPasswordWithLink(req: Request, res: Response) {
     }
 }
 
-async function resetPasswordWithOtp(req: Request, res: Response) {
-    const parsed = resetPasswordOtpSchema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: "Check the email, six-digit code, and password." });
-    const email = parsed.data.email.trim().toLowerCase();
-    const identifier = `password-reset-otp:${email}`;
-
-    try {
-        const user = await prismaClient.user.findUnique({ where: { email }, select: { id: true, appRole: true } });
-        const challenge = await prismaClient.verification.findFirst({ where: { identifier }, orderBy: { createdAt: "desc" } });
-        if (!user || !["ADMIN", "CREATOR"].includes(user.appRole) || !challenge || challenge.expiresAt <= new Date()) {
-            await prismaClient.verification.deleteMany({ where: { identifier, expiresAt: { lte: new Date() } } });
-            return res.status(400).json({ message: "The code is invalid or has expired." });
-        }
-
-        const [expectedDigest, attemptsText] = challenge.value.split(":");
-        const attempts = Number(attemptsText);
-        if (!expectedDigest || !Number.isInteger(attempts) || attempts >= OTP_MAX_ATTEMPTS) {
-            await prismaClient.verification.delete({ where: { id: challenge.id } });
-            return res.status(400).json({ message: "The code is invalid or has expired." });
-        }
-        if (!safeEqualHex(expectedDigest, otpDigest(email, parsed.data.otp))) {
-            if (attempts + 1 >= OTP_MAX_ATTEMPTS) {
-                await prismaClient.verification.delete({ where: { id: challenge.id } });
-            } else {
-                await prismaClient.verification.update({ where: { id: challenge.id }, data: { value: `${expectedDigest}:${attempts + 1}` } });
-            }
-            return res.status(400).json({ message: "The code is invalid or has expired." });
-        }
-
-        await setPassword(user.id, parsed.data.password);
-        await prismaClient.verification.delete({ where: { id: challenge.id } });
-        return res.status(200).json({ message: "Password reset successfully." });
-    } catch (error) {
-        console.error("OTP password reset failed", error);
-        return res.status(500).json({ message: "We couldn't reset your password. Please try again." });
-    }
-}
-
 export {
     sendResetLink,
     resetPasswordWithLink,
-    resetPasswordWithOtp,
 }
