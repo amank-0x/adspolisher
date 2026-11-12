@@ -171,6 +171,107 @@ export const getTeams = async (_req: Request, res: Response) => {
   }
 };
 
+export const getProjects = async (_req: Request, res: Response) => {
+  const creatorId = String(res.locals.userId);
+  try {
+    const memberships = await withDatabaseRetry(() => prismaClient.projectTeamMember.findMany({
+      where: { userId: creatorId, offer: { is: { status: "ACCEPTED" } } },
+      orderBy: { joinedAt: "desc" },
+      select: {
+        roleTitle: true,
+        joinedAt: true,
+        offer: { select: { id: true, offerCode: true, roleTitle: true, acceptedAmount: true, currency: true, scopeSummary: true, proposedDueDate: true } },
+        project: {
+          select: {
+            id: true, projectCode: true, title: true, status: true, startDate: true, dueDate: true, completedAt: true,
+            client: { select: { name: true } },
+            service: { select: { name: true } },
+            package: { select: { name: true } },
+          },
+        },
+      },
+    }));
+    const projects = memberships.filter((membership) => membership.offer).map((membership) => ({
+      ...membership.project,
+      roleTitle: membership.roleTitle || membership.offer!.roleTitle || "Creator",
+      joinedAt: membership.joinedAt,
+      agreement: {
+        offerId: membership.offer!.id,
+        offerCode: membership.offer!.offerCode,
+        acceptedAmount: membership.offer!.acceptedAmount?.toString() ?? null,
+        currency: membership.offer!.currency,
+        scopeSummary: membership.offer!.scopeSummary,
+        proposedDueDate: membership.offer!.proposedDueDate,
+      },
+    }));
+    return res.json({ success: true, data: projects });
+  } catch (error) {
+    console.error("[CREATOR PROJECTS GET ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to load creator projects." });
+  }
+};
+
+export const getProject = async (req: Request, res: Response) => {
+  const creatorId = String(res.locals.userId);
+  const projectId = Array.isArray(req.params.projectId) ? req.params.projectId[0] : req.params.projectId;
+  if (!projectId) return res.status(400).json({ success: false, message: "Project id is required." });
+  try {
+    const membership = await withDatabaseRetry(() => prismaClient.projectTeamMember.findFirst({
+      where: { projectId, userId: creatorId, offer: { is: { status: "ACCEPTED" } } },
+      select: {
+        roleTitle: true,
+        joinedAt: true,
+        offer: { select: { id: true, offerCode: true, roleTitle: true, acceptedAmount: true, currency: true, scopeSummary: true, paymentTerms: true, proposedDueDate: true, respondedAt: true } },
+        project: {
+          select: {
+            id: true, projectCode: true, title: true, status: true, startDate: true, dueDate: true, completedAt: true, createdAt: true, updatedAt: true,
+            client: { select: { name: true } },
+            service: { select: { name: true } },
+            package: { select: { name: true } },
+          },
+        },
+      },
+    }));
+    if (!membership || !membership.offer) return res.status(404).json({ success: false, message: "This project is not in your accepted creator workspace." });
+
+    const [teamMembers, deliverables] = await Promise.all([
+      withDatabaseRetry(() => prismaClient.projectTeamMember.findMany({
+        where: { projectId, offer: { is: { status: "ACCEPTED" } } },
+        orderBy: { joinedAt: "asc" },
+        select: { roleTitle: true, user: { select: { id: true, name: true, image: true } } },
+      })),
+      withDatabaseRetry(() => prismaClient.deliverable.findMany({
+        where: { projectId, uploadedById: creatorId },
+        orderBy: [{ createdAt: "desc" }, { version: "desc" }],
+        select: { id: true, title: true, description: true, fileUrl: true, previewUrl: true, version: true, status: true, createdAt: true },
+      })),
+    ]);
+    return res.json({
+      success: true,
+      data: {
+        ...membership.project,
+        roleTitle: membership.roleTitle || membership.offer.roleTitle || "Creator",
+        joinedAt: membership.joinedAt,
+        agreement: {
+          offerId: membership.offer.id,
+          offerCode: membership.offer.offerCode,
+          acceptedAmount: membership.offer.acceptedAmount?.toString() ?? null,
+          currency: membership.offer.currency,
+          scopeSummary: membership.offer.scopeSummary,
+          paymentTerms: membership.offer.paymentTerms,
+          acceptedAt: membership.offer.respondedAt,
+          proposedDueDate: membership.offer.proposedDueDate,
+        },
+        teamMembers: teamMembers.map((member) => ({ ...member.user, roleTitle: member.roleTitle || "Creator", isYou: member.user.id === creatorId })),
+        deliverables,
+      },
+    });
+  } catch (error) {
+    console.error("[CREATOR PROJECT DETAIL GET ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to load project details." });
+  }
+};
+
 export const patchOffersByIdrespond = async (req: Request, res: Response) => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = offerResponseSchema.safeParse(req.body);

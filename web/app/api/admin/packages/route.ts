@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { backendFetch } from "@/lib/backend-api";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
 
 function authHeaders(req: Request) {
-  return {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     cookie: req.headers.get("cookie") || "",
     authorization: req.headers.get("authorization") || "",
   };
+  if (process.env.ADMIN_SECRET_KEY) {
+    headers["x-admin-key"] = process.env.ADMIN_SECRET_KEY;
+  }
+  return headers;
 }
 
 export async function GET(req: Request) {

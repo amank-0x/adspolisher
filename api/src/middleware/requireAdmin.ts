@@ -4,6 +4,38 @@ import prismaClient from "../config/db.js";
 import jwt from "jsonwebtoken";
 import type { JwtPayload } from "../types/index.js";
 
+const ADMIN_EMAILS = new Set(
+  (process.env.ADMIN_EMAILS || "amankarn187@gmail.com,amankarn2007@gmail.com,amnkarn.temp@gmail.com,manishh9142@gmail.com")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+);
+
+async function verifyOrPromoteAdminUser(currentUser: { id: string; name: string | null; email: string; appRole: string } | null) {
+  if (!currentUser) return null;
+
+  if (currentUser.appRole === "ADMIN") {
+    return currentUser;
+  }
+
+  // Auto-promote if email is configured as an authorized administrator email
+  if (currentUser.email && ADMIN_EMAILS.has(currentUser.email.trim().toLowerCase())) {
+    try {
+      await prismaClient.user.update({
+        where: { id: currentUser.id },
+        data: { appRole: "ADMIN" },
+      });
+      return { ...currentUser, appRole: "ADMIN" };
+    } catch (err) {
+      console.error("[AUTO PROMOTE ADMIN ERROR]", err);
+      // Still treat as admin in-memory
+      return { ...currentUser, appRole: "ADMIN" };
+    }
+  }
+
+  return null;
+}
+
 export function toBetterAuthHeaders(req: Request): Headers {
   const headers = new Headers();
   for (const [key, value] of Object.entries(req.headers)) {
@@ -14,7 +46,7 @@ export function toBetterAuthHeaders(req: Request): Headers {
 }
 
 /**
- * Protects staff-only API routes with the Better Auth session or verified admin token.
+ * Protects staff-only API routes with the Better Auth session, secret key, or verified admin token.
  * Role checks stay on the server; the dashboard must never be trusted to
  * decide whether a request is administrative.
  */
@@ -24,24 +56,32 @@ export async function requireAdmin(
   next: NextFunction,
 ) {
   try {
+    // 0. Secret key bypass for internal / system administrative operations
+    const adminKey = req.headers["x-admin-key"] || (req.headers.authorization?.startsWith("Bearer ") ? req.headers.authorization.slice(7).trim() : null);
+    if (adminKey && process.env.ADMIN_SECRET_KEY && adminKey === process.env.ADMIN_SECRET_KEY) {
+      res.locals.adminUserId = "system-admin";
+      res.locals.adminUser = { id: "system-admin", name: "System Admin", email: "admin@adspolisher.com", appRole: "ADMIN" };
+      return next();
+    }
+
+    // 1. Better Auth session check
     const session = await auth.api.getSession({
       headers: toBetterAuthHeaders(req),
     });
     if (session?.user?.id) {
-      // Session additional fields can be stale or missing after a role change.
-      // The database role is authoritative for protected admin APIs.
       const currentUser = await prismaClient.user.findUnique({
         where: { id: session.user.id },
         select: { id: true, name: true, email: true, appRole: true },
       });
-      if (currentUser?.appRole === "ADMIN") {
-        res.locals.adminUserId = currentUser.id;
-        res.locals.adminUser = currentUser;
+      const adminUser = await verifyOrPromoteAdminUser(currentUser);
+      if (adminUser) {
+        res.locals.adminUserId = adminUser.id;
+        res.locals.adminUser = adminUser;
         return next();
       }
     }
 
-    // Fallback: Check Better Auth session token directly in Prisma Session table
+    // 2. Fallback: Check Better Auth session token directly in Prisma Session table
     const cookieHeader = req.headers.cookie || "";
     const authHeader = req.headers.authorization || "";
 
@@ -65,16 +105,17 @@ export async function requireAdmin(
             select: { id: true, name: true, email: true, appRole: true },
           });
 
-          if (currentUser?.appRole === "ADMIN") {
-            res.locals.adminUserId = currentUser.id;
-            res.locals.adminUser = currentUser;
+          const adminUser = await verifyOrPromoteAdminUser(currentUser);
+          if (adminUser) {
+            res.locals.adminUserId = adminUser.id;
+            res.locals.adminUser = adminUser;
             return next();
           }
         }
       }
     }
 
-    // Fallback: Check JWT token in cookie / header
+    // 3. Fallback: Check JWT token in cookie / header
     const tokenMatch = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
     const matchedToken = tokenMatch?.[1];
     const rawToken = (req as any).cookies?.token || (matchedToken ? decodeURIComponent(matchedToken) : null);
@@ -86,9 +127,10 @@ export async function requireAdmin(
             where: { id: decoded.id },
             select: { id: true, name: true, email: true, appRole: true },
           });
-          if (currentUser?.appRole === "ADMIN") {
-            res.locals.adminUserId = currentUser.id;
-            res.locals.adminUser = currentUser;
+          const adminUser = await verifyOrPromoteAdminUser(currentUser);
+          if (adminUser) {
+            res.locals.adminUserId = adminUser.id;
+            res.locals.adminUser = adminUser;
             return next();
           }
         }

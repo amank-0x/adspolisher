@@ -1,13 +1,11 @@
 import type { Request, Response } from "express";
 import { hashPassword } from "better-auth/crypto";
-import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import prismaClient from "../config/db.js";
 import jwt from "jsonwebtoken";
 import { sendEmailResetLink } from "../utils/sendEmailMagicLink.js";
-import { sendEmailOtp } from "../utils/sendEmailOtp.js";
 import { resetPasswordSchema, sendResetLinkSchema, resetPasswordOtpSchema } from "../types/auth.type.js";
 
-const OTP_LIFETIME_MS = 5 * 60 * 1000;
 const OTP_MAX_ATTEMPTS = 5;
 
 function resetSecret() {
@@ -60,7 +58,7 @@ async function sendResetLink(req: Request, res: Response) {
         let emailDeliveryFailed = false;
 
         // Same response for unknown addresses and successful sends prevents account enumeration.
-        if (user?.appRole === "CUSTOMER") {
+        if (user) {
             const secret = resetSecret();
             if (!secret) throw new Error("Password recovery secret is not configured");
             const jti = randomUUID();
@@ -73,20 +71,6 @@ async function sendResetLink(req: Request, res: Response) {
             const sent = await sendEmailResetLink(user.email, user.name, link);
             if (!sent) {
                 await prismaClient.verification.deleteMany({ where: { identifier } });
-                emailDeliveryFailed = true;
-            }
-        } else if (user && ["ADMIN", "CREATOR"].includes(user.appRole)) {
-            const otp = String(randomInt(0, 1_000_000)).padStart(6, "0");
-            const identifier = `password-reset-otp:${user.email}`;
-            const value = `${otpDigest(user.email, otp)}:0`;
-            const expiresAt = new Date(Date.now() + OTP_LIFETIME_MS);
-            await prismaClient.verification.deleteMany({ where: { identifier } });
-            await prismaClient.verification.create({ data: { identifier, value, expiresAt } });
-            try {
-                await sendEmailOtp(user.email, user.name, otp, "password-reset");
-            } catch (error) {
-                await prismaClient.verification.deleteMany({ where: { identifier } });
-                console.error("Password recovery code could not be delivered", error);
                 emailDeliveryFailed = true;
             }
         }
@@ -124,7 +108,7 @@ async function resetPasswordWithLink(req: Request, res: Response) {
             return res.status(400).json({ message: "This reset link is invalid or has expired." });
         }
         const user = await prismaClient.user.findUnique({ where: { email: decoded.email }, select: { id: true, appRole: true } });
-        if (!user || user.appRole !== "CUSTOMER") {
+        if (!user) {
             return res.status(400).json({ message: "This reset link is invalid or has expired." });
         }
         await setPassword(user.id, data.password);
