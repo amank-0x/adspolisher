@@ -239,7 +239,7 @@ function AdminTeamPageInner() {
     setProcessingUserIds((prev) => ({ ...prev, [creatorId]: true }));
 
     try {
-      const res = await fetch(`/api/admin/projects/${selectedProjectId}/team`, {
+      const res = await backendFetch(`/api/v1/projects/${selectedProjectId}/team`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -271,7 +271,7 @@ function AdminTeamPageInner() {
     setProcessingUserIds((prev) => ({ ...prev, [userId]: true }));
 
     try {
-      const res = await fetch(`/api/admin/projects/${selectedProjectId}/team/${userId}`, {
+      const res = await backendFetch(`/api/v1/projects/${selectedProjectId}/team/${userId}`, {
         method: "DELETE",
       });
 
@@ -295,7 +295,7 @@ function AdminTeamPageInner() {
     if (!selectedProjectId || !newRoleTitle.trim()) return;
 
     try {
-      const res = await fetch(`/api/admin/projects/${selectedProjectId}/team/${userId}`, {
+      const res = await backendFetch(`/api/v1/projects/${selectedProjectId}/team/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ roleTitle: newRoleTitle.trim() }),
@@ -320,7 +320,7 @@ function AdminTeamPageInner() {
 
     setInvitingCreator(true);
     try {
-      const res = await fetch("/api/admin/team/roster", {
+      const res = await backendFetch("/api/v1/projects/roster/creators", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

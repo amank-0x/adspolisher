@@ -161,6 +161,9 @@ export default function AdminProjectsPage() {
   // Filtered list
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
+      if (statusFilter === "ALL" && p.status === "COMPLETED") {
+        return false;
+      }
       if (statusFilter !== "ALL" && p.status !== statusFilter) {
         return false;
       }
@@ -179,7 +182,7 @@ export default function AdminProjectsPage() {
 
   // Metric counts
   const metrics = useMemo(() => {
-    const total = projects.length;
+    const total = projects.filter((p) => p.status !== "COMPLETED").length;
     const ongoing = projects.filter((p) => p.status === "IN_PROGRESS").length;
     const review = projects.filter(
       (p) => p.status === "IN_REVIEW" || p.status === "WAITING_FOR_CLIENT"
