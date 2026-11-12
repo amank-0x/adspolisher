@@ -4,6 +4,33 @@ import prismaClient from "../config/db.js";
 import jwt from "jsonwebtoken";
 import { toBetterAuthHeaders } from "./requireAdmin.js";
 
+async function resolveCreatorUser(userId: string) {
+  const currentUser = await prismaClient.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, email: true, appRole: true, image: true },
+  });
+  if (!currentUser) return null;
+  if (currentUser.appRole === "CREATOR" || currentUser.appRole === "ADMIN") return currentUser;
+
+  // Approved applications are an authoritative creator grant. Repair stale
+  // CUSTOMER roles here so production accounts created before role sync still work.
+  if (currentUser.email) {
+    const approvedApplication = await prismaClient.creatorApplication.findFirst({
+      where: { email: { equals: currentUser.email, mode: "insensitive" }, status: "APPROVED" },
+      select: { id: true },
+    });
+    if (approvedApplication) {
+      const promoted = await prismaClient.user.update({
+        where: { id: currentUser.id },
+        data: { appRole: "CREATOR" },
+        select: { id: true, name: true, email: true, appRole: true, image: true },
+      });
+      return promoted;
+    }
+  }
+  return null;
+}
+
 /**
  * Middleware ensuring the authenticated user has CREATOR or ADMIN access.
  */
@@ -19,11 +46,8 @@ export async function requireCreator(
     });
 
     if (session?.user?.id) {
-      const currentUser = await prismaClient.user.findUnique({
-        where: { id: session.user.id },
-        select: { id: true, name: true, email: true, appRole: true, image: true },
-      });
-      if (currentUser && (currentUser.appRole === "CREATOR" || currentUser.appRole === "ADMIN")) {
+      const currentUser = await resolveCreatorUser(session.user.id);
+      if (currentUser) {
         res.locals.userId = currentUser.id;
         res.locals.user = currentUser;
         return next();
@@ -49,12 +73,8 @@ export async function requireCreator(
         });
 
         if (dbSession && dbSession.expiresAt > new Date()) {
-          const currentUser = await prismaClient.user.findUnique({
-            where: { id: dbSession.userId },
-            select: { id: true, name: true, email: true, appRole: true, image: true },
-          });
-
-          if (currentUser && (currentUser.appRole === "CREATOR" || currentUser.appRole === "ADMIN")) {
+          const currentUser = await resolveCreatorUser(dbSession.userId);
+          if (currentUser) {
             res.locals.userId = currentUser.id;
             res.locals.user = currentUser;
             return next();
@@ -71,11 +91,8 @@ export async function requireCreator(
       try {
         const decoded = jwt.verify(rawToken, process.env.USER_SECRET) as any;
         if (decoded?.id) {
-          const currentUser = await prismaClient.user.findUnique({
-            where: { id: decoded.id },
-            select: { id: true, name: true, email: true, appRole: true, image: true },
-          });
-          if (currentUser && (currentUser.appRole === "CREATOR" || currentUser.appRole === "ADMIN")) {
+          const currentUser = await resolveCreatorUser(decoded.id);
+          if (currentUser) {
             res.locals.userId = currentUser.id;
             res.locals.user = currentUser;
             return next();
