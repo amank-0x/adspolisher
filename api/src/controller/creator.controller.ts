@@ -77,6 +77,83 @@ export const getOffers = async (_req: Request, res: Response) => {
   }
 };
 
+export const getOverview = async (_req: Request, res: Response) => {
+  const creatorId = String(res.locals.userId);
+  const chartStart = new Date();
+  chartStart.setUTCHours(0, 0, 0, 0);
+  chartStart.setUTCDate(chartStart.getUTCDate() - 29);
+
+  try {
+    const [pendingOffers, recentOffers, offerEvents, memberships] = await withDatabaseRetry(() =>
+      Promise.all([
+        prismaClient.projectOffer.count({
+          where: { creatorId, status: { in: ["SENT", "COUNTERED_BY_ADMIN"] } },
+        }),
+        prismaClient.projectOffer.findMany({
+          where: { creatorId },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+          select: {
+            id: true,
+            offerCode: true,
+            status: true,
+            currentAmount: true,
+            acceptedAmount: true,
+            currency: true,
+            createdAt: true,
+            project: { select: { id: true, projectCode: true, title: true, status: true } },
+          },
+        }),
+        prismaClient.projectOffer.findMany({
+          where: { creatorId, createdAt: { gte: chartStart } },
+          select: { createdAt: true },
+        }),
+        prismaClient.projectTeamMember.findMany({
+          where: { userId: creatorId, offer: { is: { status: "ACCEPTED" } } },
+          orderBy: { joinedAt: "desc" },
+          select: {
+            project: { select: { id: true, projectCode: true, title: true, status: true, dueDate: true, updatedAt: true } },
+          },
+        }),
+      ]),
+    );
+
+    const uniqueProjects = Array.from(new Map(memberships.map(({ project }) => [project.id, project])).values());
+    const chartDays = Array.from({ length: 30 }, (_, index) => {
+      const date = new Date(chartStart);
+      date.setUTCDate(chartStart.getUTCDate() + index);
+      return { date: date.toISOString().slice(0, 10), count: 0 };
+    });
+    const chartByDate = new Map(chartDays.map((day) => [day.date, day]));
+    for (const event of offerEvents) {
+      const day = chartByDate.get(event.createdAt.toISOString().slice(0, 10));
+      if (day) day.count += 1;
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        counts: {
+          pendingOffers,
+          activeProjects: uniqueProjects.filter((project) => !["COMPLETED", "CANCELLED"].includes(project.status)).length,
+          completedProjects: uniqueProjects.filter((project) => project.status === "COMPLETED").length,
+          totalProjects: uniqueProjects.length,
+        },
+        projectRequests: chartDays,
+        recentOffers: recentOffers.map((offer) => ({
+          ...offer,
+          currentAmount: offer.currentAmount.toString(),
+          acceptedAmount: offer.acceptedAmount?.toString() ?? null,
+        })),
+        projects: uniqueProjects.slice(0, 5),
+      },
+    });
+  } catch (error) {
+    console.error("[CREATOR OVERVIEW GET ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to load creator overview." });
+  }
+};
+
 export const getEarnings = async (_req: Request, res: Response) => {
   const creatorId = String(res.locals.userId);
   try {

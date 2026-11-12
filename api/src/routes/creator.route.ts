@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getOffers,
+  getOverview,
   getPortfolio,
   getProfile,
   getEarnings,
@@ -18,6 +19,7 @@ import { requireCreator } from "../middleware/requireCreator.js";
 const creatorRouter = Router();
 
 creatorRouter.get("/offers", requireCreator, getOffers);
+creatorRouter.get("/overview", requireCreator, getOverview);
 creatorRouter.patch("/offers/:id/respond", requireCreator, respondToOffer);
 creatorRouter.get("/earnings", requireCreator, getEarnings);
 creatorRouter.get("/teams", requireCreator, getTeams);
