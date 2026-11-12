@@ -77,6 +77,100 @@ export const getOffers = async (_req: Request, res: Response) => {
   }
 };
 
+export const getEarnings = async (_req: Request, res: Response) => {
+  const creatorId = String(res.locals.userId);
+  try {
+    const acceptedOffers = await withDatabaseRetry(() => prismaClient.projectOffer.findMany({
+      where: { creatorId, status: "ACCEPTED", acceptedAmount: { not: null } },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: {
+        id: true,
+        offerCode: true,
+        acceptedAmount: true,
+        currency: true,
+        roleTitle: true,
+        respondedAt: true,
+        createdAt: true,
+        proposedDueDate: true,
+        project: { select: { id: true, projectCode: true, title: true, status: true, dueDate: true, completedAt: true } },
+      },
+    }));
+
+    // A creator can be re-offered a project after removal. Count only the
+    // newest accepted agreement for that project to prevent double counting.
+    const latestByProject = new Map<string, (typeof acceptedOffers)[number]>();
+    for (const offer of acceptedOffers) {
+      if (!latestByProject.has(offer.project.id)) latestByProject.set(offer.project.id, offer);
+    }
+    const projects = Array.from(latestByProject.values()).map((offer) => ({
+      offerId: offer.id,
+      offerCode: offer.offerCode,
+      agreedAmount: offer.acceptedAmount!.toString(),
+      currency: offer.currency,
+      roleTitle: offer.roleTitle,
+      acceptedAt: offer.respondedAt || offer.createdAt,
+      dueDate: offer.project.dueDate || offer.proposedDueDate,
+      completedAt: offer.project.completedAt,
+      project: offer.project,
+    }));
+    return res.json({ success: true, data: { projects } });
+  } catch (error) {
+    console.error("[CREATOR EARNINGS GET ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to load creator earnings." });
+  }
+};
+
+export const getTeams = async (_req: Request, res: Response) => {
+  const creatorId = String(res.locals.userId);
+  try {
+    const memberships = await withDatabaseRetry(() => prismaClient.projectTeamMember.findMany({
+      where: { userId: creatorId, offer: { is: { status: "ACCEPTED" } } },
+      orderBy: { joinedAt: "desc" },
+      select: { projectId: true, roleTitle: true, project: { select: { id: true, projectCode: true, title: true, status: true } } },
+    }));
+    const projectIds = [...new Set(memberships.map((membership) => membership.projectId))];
+    if (projectIds.length === 0) return res.json({ success: true, data: [] });
+
+    const membershipsByProject = await withDatabaseRetry(() => prismaClient.projectTeamMember.findMany({
+      where: { projectId: { in: projectIds }, offer: { is: { status: "ACCEPTED" } } },
+      orderBy: { joinedAt: "asc" },
+      select: { projectId: true, roleTitle: true, user: { select: { id: true, name: true, email: true, image: true } } },
+    }));
+    const emails = [...new Set(membershipsByProject.map((member) => member.user.email))];
+    const applications = emails.length ? await withDatabaseRetry(() => prismaClient.creatorApplication.findMany({
+      where: { email: { in: emails } },
+      orderBy: { createdAt: "desc" },
+      select: { email: true, portfolioUrl: true, secondaryUrl: true },
+    })) : [];
+    const linksByEmail = new Map<string, { portfolioUrl: string | null; secondaryUrl: string | null }>();
+    for (const application of applications) {
+      const key = application.email.toLowerCase();
+      if (!linksByEmail.has(key)) linksByEmail.set(key, { portfolioUrl: application.portfolioUrl, secondaryUrl: application.secondaryUrl });
+    }
+
+    const membersByProject = new Map<string, typeof membershipsByProject>();
+    for (const member of membershipsByProject) {
+      const list = membersByProject.get(member.projectId) || [];
+      list.push(member);
+      membersByProject.set(member.projectId, list);
+    }
+    const teams = memberships.map((membership) => ({
+      ...membership.project,
+      yourRole: membership.roleTitle || "Creator",
+      members: (membersByProject.get(membership.projectId) || []).map((member) => ({
+        ...member.user,
+        isYou: member.user.id === creatorId,
+        roleTitle: member.roleTitle || "Creator",
+        ...linksByEmail.get(member.user.email.toLowerCase()),
+      })),
+    }));
+    return res.json({ success: true, data: teams });
+  } catch (error) {
+    console.error("[CREATOR TEAMS GET ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to load creator teams." });
+  }
+};
+
 export const patchOffersByIdrespond = async (req: Request, res: Response) => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const parsed = offerResponseSchema.safeParse(req.body);

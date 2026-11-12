@@ -191,10 +191,16 @@ export const getByIdoffers = async (req: Request, res: Response) => {
   if (!projectId) return res.status(400).json({ success: false, message: "Project id is required." });
   try {
     const offers = await prismaClient.projectOffer.findMany({
-      where: { projectId }, orderBy: { createdAt: "desc" },
+      where: { projectId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       include: { creator: { select: { id: true, name: true, email: true } }, negotiation: { orderBy: { createdAt: "asc" } } },
     });
-    return res.json({ success: true, data: offers });
+    // Keep every offer and negotiation in storage, but show only the latest
+    // offer card for each creator in the admin project view.
+    const latestOfferByCreator = new Map<string, (typeof offers)[number]>();
+    for (const offer of offers) {
+      if (!latestOfferByCreator.has(offer.creatorId)) latestOfferByCreator.set(offer.creatorId, offer);
+    }
+    return res.json({ success: true, data: Array.from(latestOfferByCreator.values()) });
   } catch (error) {
     console.error("[PROJECT OFFERS ADMIN GET ERROR]", error);
     return res.status(500).json({ success: false, message: "Failed to load project offers." });

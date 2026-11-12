@@ -95,7 +95,25 @@ type Creator = {
   }[];
 };
 
-type ProjectOffer = { id: string; offerCode: string; status: string; currentAmount: string; currency: string; roleTitle: string; scopeSummary: string; creator: { id: string; name: string; email: string }; negotiation: { id: string; action: string; amount: string | null; message: string | null; actorRole: string }[] };
+type ProjectOffer = { id: string; offerCode: string; status: string; currentAmount: string; currency: string; roleTitle: string; scopeSummary: string; createdAt: string; creator: { id: string; name: string; email: string }; negotiation: { id: string; action: string; amount: string | null; message: string | null; actorRole: string }[] };
+
+function keepLatestOfferPerCreator(offers: ProjectOffer[]) {
+  const latest = new Map<string, ProjectOffer>();
+  for (const offer of offers) {
+    const existing = latest.get(offer.creator.id);
+    if (!existing || new Date(offer.createdAt).getTime() > new Date(existing.createdAt).getTime()) {
+      latest.set(offer.creator.id, offer);
+    }
+  }
+  return [...latest.values()].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+async function fetchProjectOffers(projectId: string): Promise<ProjectOffer[]> {
+  const response = await backendFetch(`/api/v1/projects/${projectId}/offers`);
+  const payload = await response.json();
+  if (!response.ok || !payload.success) throw new Error(payload.message || "Failed to refresh project offers.");
+  return keepLatestOfferPerCreator(payload.data || []);
+}
 
 const DISCIPLINE_PRESETS = [
   "Lead Art Director",
@@ -193,8 +211,8 @@ function AdminTeamPageInner() {
   useEffect(() => {
     if (!selectedProjectId) { setProjectOffers([]); return; }
     let active = true;
-    void backendFetch(`/api/v1/projects/${selectedProjectId}/offers`).then((response) => response.json()).then((payload) => {
-      if (active && payload.success) setProjectOffers(payload.data || []);
+    void fetchProjectOffers(selectedProjectId).then((offers) => {
+      if (active) setProjectOffers(offers);
     }).catch(() => { if (active) setProjectOffers([]); });
     return () => { active = false; };
   }, [selectedProjectId]);
@@ -208,8 +226,7 @@ function AdminTeamPageInner() {
       const payload = await response.json();
       if (!response.ok || !payload.success) throw new Error(payload.message || "Could not respond to counter-offer.");
       showToast(payload.message);
-      const refreshed = await backendFetch(`/api/v1/projects/${selectedProjectId}/offers`).then((r) => r.json());
-      if (refreshed.success) setProjectOffers(refreshed.data || []);
+      setProjectOffers(await fetchProjectOffers(selectedProjectId));
       void loadData();
     } catch (error) { showToast(error instanceof Error ? error.message : "Could not respond to counter-offer.", "error"); }
   };
@@ -284,6 +301,11 @@ function AdminTeamPageInner() {
       const data = await res.json();
       if (data.success) {
         showToast(data.message || "Project offer sent to creator");
+        try {
+          setProjectOffers(await fetchProjectOffers(selectedProjectId));
+        } catch (refreshError) {
+          console.error("[REFRESH PROJECT OFFERS ERROR]", refreshError);
+        }
         void loadData();
       } else {
         if (res.status === 404 || data.code === "CREATOR_NOT_AVAILABLE") void loadData();
@@ -620,7 +642,7 @@ function AdminTeamPageInner() {
               </div>
 
               <section className="rounded-3xl border border-black/[0.08] bg-white/85 p-6 shadow-sm backdrop-blur-xl">
-                <div className="flex items-center justify-between gap-3"><div><h3 className="text-base font-bold text-neutral-900">Project offers</h3><p className="mt-1 text-xs text-neutral-500">Offer history and creator fee counters for this project.</p></div><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-bold text-neutral-600">{projectOffers.length}</span></div>
+                <div className="flex items-center justify-between gap-3"><div><h3 className="text-base font-bold text-neutral-900">Project offers</h3><p className="mt-1 text-xs text-neutral-500">Latest offer per creator. Earlier offers remain saved in the database.</p></div><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-bold text-neutral-600">{projectOffers.length}</span></div>
                 <div className="mt-4 space-y-3">
                   {projectOffers.length === 0 ? <p className="rounded-xl bg-neutral-50 p-4 text-sm text-neutral-500">No offers sent for this project yet.</p> : projectOffers.map((offer) => <article key={offer.id} className="rounded-2xl border border-black/[0.06] p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-sm font-bold">{offer.creator.name || offer.creator.email} <span className="font-normal text-neutral-500">· {offer.roleTitle}</span></p><p className="text-xs text-neutral-500">{offer.offerCode} · {offer.creator.email}</p></div><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-[10px] font-bold uppercase">{offer.status.replaceAll("_", " ")}</span></div>

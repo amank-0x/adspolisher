@@ -3,6 +3,8 @@ import {
   getOffers,
   getPortfolio,
   getProfile,
+  getEarnings,
+  getTeams,
   patchOffersByIdrespond as respondToOffer,
   patchProfile,
   patchSettingsavatar as updateAvatar,
@@ -15,6 +17,8 @@ const creatorRouter = Router();
 
 creatorRouter.get("/offers", requireCreator, getOffers);
 creatorRouter.patch("/offers/:id/respond", requireCreator, respondToOffer);
+creatorRouter.get("/earnings", requireCreator, getEarnings);
+creatorRouter.get("/teams", requireCreator, getTeams);
 creatorRouter.get("/portfolio", requireCreator, getPortfolio);
 creatorRouter.get("/profile", requireCreator, getProfile);
 creatorRouter.patch("/profile", requireCreator, patchProfile);
