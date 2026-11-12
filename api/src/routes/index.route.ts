@@ -5,7 +5,7 @@ import requestRouter from "./request.route.js";
 import proposalRouter from "./proposal.route.js";
 import projectRouter from "./project.route.js";
 import portfolioRouter from "./portfolio.route.js";
-import creatorApplicationRouter, { adminCreatorApplicationRouter } from "./creator-application.route.js";
+import { creatorApplicationRouter, adminCreatorApplicationRouter } from "./creator-application.route.js";
 import { serviceRouter, packageRouter } from "./service-package.route.js";
 import creatorRouter from "./creator.route.js";
 

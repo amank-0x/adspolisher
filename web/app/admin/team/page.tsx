@@ -286,6 +286,7 @@ function AdminTeamPageInner() {
         showToast(data.message || "Project offer sent to creator");
         void loadData();
       } else {
+        if (res.status === 404 || data.code === "CREATOR_NOT_AVAILABLE") void loadData();
         showToast(data.message || "Failed to add creator to team", "error");
       }
     } catch (err: any) {

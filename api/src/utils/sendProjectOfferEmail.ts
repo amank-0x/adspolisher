@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import getProjectOfferEmail from "../assets/project_offer_email.js";
+import getCreatorOfferHtml from "../assets/creator_oroject_req.js";
 
 type ProjectOfferEmailInput = {
   name: string;
@@ -8,6 +8,7 @@ type ProjectOfferEmailInput = {
   amount: string;
   currency: string;
   roleTitle: string;
+  scopeSummary: string;
   dueDate: Date | null;
   offerUrl: string;
 };
@@ -18,7 +19,17 @@ export async function sendProjectOfferEmail(to: string, input: ProjectOfferEmail
     from: "AdsPolisher <info@adspolisher.com>",
     to,
     subject: `New project offer: ${input.projectTitle}`,
-    html: getProjectOfferEmail(input),
+    html: getCreatorOfferHtml({
+      creatorName: input.name,
+      offerId: input.offerCode,
+      projectTitle: input.projectTitle,
+      role: input.roleTitle,
+      feeAmount: input.amount,
+      currency: input.currency,
+      deadline: input.dueDate,
+      reviewUrl: input.offerUrl,
+      scopeSummary: input.scopeSummary,
+    }),
   });
   if (response.error) throw new Error("Project offer email could not be delivered");
 }
