@@ -239,6 +239,11 @@ export const patchByProjectIdoffersByOfferId = async (req: Request, res: Respons
           create: { projectId: offer.projectId, userId: offer.creatorId, roleTitle: offer.roleTitle, offerId: offer.id } });
         const project = await tx.project.findUnique({ where: { id: offer.projectId }, select: { assignedToId: true } });
         if (project && !project.assignedToId) await tx.project.update({ where: { id: offer.projectId }, data: { assignedToId: offer.creatorId } });
+        await tx.earningEntry.upsert({
+          where: { offerId: offer.id },
+          update: { creatorId: offer.creatorId, projectId: offer.projectId, amount: offer.currentAmount, currency: offer.currency, status: "PENDING" },
+          create: { creatorId: offer.creatorId, projectId: offer.projectId, offerId: offer.id, amount: offer.currentAmount, currency: offer.currency, status: "PENDING" },
+        });
       }
       return row;
     });

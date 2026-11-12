@@ -104,6 +104,23 @@ enum OfferNegotiationActor {
   SYSTEM
 }
 
+enum EarningType {
+  PROJECT_PAYMENT
+  MILESTONE
+  BONUS
+  ADJUSTMENT
+  DEDUCTION
+}
+
+enum EarningStatus {
+  PENDING
+  APPROVED
+  IN_PAYOUT
+  PAID
+  ON_HOLD
+  CANCELLED
+}
+
 // ------------------------------------
 // BETTER AUTH
 // ------------------------------------
@@ -136,6 +153,7 @@ model User {
   creatorOffers        ProjectOffer[] @relation("OfferCreator")
   sentCreatorOffers    ProjectOffer[] @relation("OfferAdmin")
   offerNegotiations    OfferNegotiationEntry[]
+  creatorEarnings      EarningEntry[] @relation("EarningCreator")
   auditLogs            AuditLog[]
 }
 
@@ -362,6 +380,7 @@ model Project {
   deliverables Deliverable[]
   teamMembers  ProjectTeamMember[]
   offers       ProjectOffer[]
+  creatorEarnings EarningEntry[]
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
@@ -411,6 +430,7 @@ model ProjectOffer {
   respondedAt    DateTime?
   negotiation    OfferNegotiationEntry[]
   teamMember     ProjectTeamMember?
+  earningEntry   EarningEntry?
   createdAt      DateTime          @default(now())
   updatedAt      DateTime          @updatedAt
 
@@ -433,6 +453,29 @@ model OfferNegotiationEntry {
   createdAt DateTime                @default(now())
 
   @@index([offerId, createdAt])
+}
+
+model EarningEntry {
+  id        String       @id @default(cuid())
+  creatorId String
+  creator   User         @relation("EarningCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  projectId String
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  offerId   String?      @unique
+  offer     ProjectOffer? @relation(fields: [offerId], references: [id], onDelete: SetNull)
+  type      EarningType  @default(PROJECT_PAYMENT)
+  status    EarningStatus @default(PENDING)
+  label     String?
+  currency  String       @default("INR") @db.VarChar(3)
+  amount    Decimal      @db.Decimal(10, 2)
+  approvedAt DateTime?
+  paidAt     DateTime?
+  holdReason String?     @db.Text
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([creatorId, status])
+  @@index([projectId])
 }
 
 model ProjectMessage {

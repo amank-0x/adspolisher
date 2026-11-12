@@ -80,38 +80,38 @@ export const getOffers = async (_req: Request, res: Response) => {
 export const getEarnings = async (_req: Request, res: Response) => {
   const creatorId = String(res.locals.userId);
   try {
-    const acceptedOffers = await withDatabaseRetry(() => prismaClient.projectOffer.findMany({
-      where: { creatorId, status: "ACCEPTED", acceptedAmount: { not: null } },
+    const earnings = await withDatabaseRetry(() => prismaClient.earningEntry.findMany({
+      where: { creatorId, status: { not: "CANCELLED" }, offer: { is: { status: "ACCEPTED" } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       select: {
         id: true,
-        offerCode: true,
-        acceptedAmount: true,
+        amount: true,
         currency: true,
-        roleTitle: true,
-        respondedAt: true,
+        status: true,
         createdAt: true,
-        proposedDueDate: true,
+        offer: { select: { id: true, offerCode: true, roleTitle: true, respondedAt: true, createdAt: true, proposedDueDate: true } },
         project: { select: { id: true, projectCode: true, title: true, status: true, dueDate: true, completedAt: true } },
       },
     }));
 
-    // A creator can be re-offered a project after removal. Count only the
-    // newest accepted agreement for that project to prevent double counting.
-    const latestByProject = new Map<string, (typeof acceptedOffers)[number]>();
-    for (const offer of acceptedOffers) {
-      if (!latestByProject.has(offer.project.id)) latestByProject.set(offer.project.id, offer);
+    // Re-offers after removal can create multiple ledger rows. Show only the
+    // latest accepted agreement for a project to avoid double counting it.
+    const latestByProject = new Map<string, (typeof earnings)[number]>();
+    for (const earning of earnings) {
+      if (!latestByProject.has(earning.project.id)) latestByProject.set(earning.project.id, earning);
     }
-    const projects = Array.from(latestByProject.values()).map((offer) => ({
-      offerId: offer.id,
-      offerCode: offer.offerCode,
-      agreedAmount: offer.acceptedAmount!.toString(),
-      currency: offer.currency,
-      roleTitle: offer.roleTitle,
-      acceptedAt: offer.respondedAt || offer.createdAt,
-      dueDate: offer.project.dueDate || offer.proposedDueDate,
-      completedAt: offer.project.completedAt,
-      project: offer.project,
+    const projects = Array.from(latestByProject.values()).map((earning) => ({
+      earningId: earning.id,
+      offerId: earning.offer?.id,
+      offerCode: earning.offer?.offerCode || "",
+      agreedAmount: earning.amount.toString(),
+      currency: earning.currency,
+      earningStatus: earning.status,
+      roleTitle: earning.offer?.roleTitle || "Creator",
+      acceptedAt: earning.offer?.respondedAt || earning.offer?.createdAt || earning.createdAt,
+      dueDate: earning.project.dueDate || earning.offer?.proposedDueDate || null,
+      completedAt: earning.project.completedAt,
+      project: earning.project,
     }));
     return res.json({ success: true, data: { projects } });
   } catch (error) {
@@ -196,6 +196,11 @@ export const patchOffersByIdrespond = async (req: Request, res: Response) => {
         await tx.projectTeamMember.upsert({ where: { projectId_userId: { projectId: offer.projectId, userId: creatorId } }, update: { roleTitle: offer.roleTitle, offerId: id }, create: { projectId: offer.projectId, userId: creatorId, roleTitle: offer.roleTitle, offerId: id } });
         const project = await tx.project.findUnique({ where: { id: offer.projectId }, select: { assignedToId: true } });
         if (project && !project.assignedToId) await tx.project.update({ where: { id: offer.projectId }, data: { assignedToId: creatorId } });
+        await tx.earningEntry.upsert({
+          where: { offerId: id },
+          update: { creatorId, projectId: offer.projectId, amount: offer.currentAmount, currency: offer.currency, status: "PENDING" },
+          create: { creatorId, projectId: offer.projectId, offerId: id, amount: offer.currentAmount, currency: offer.currency, status: "PENDING" },
+        });
       }
       return row;
     });
