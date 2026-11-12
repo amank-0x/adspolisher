@@ -32,6 +32,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { signOut, useSession } from "@/lib/auth-client";
+import { backendFetch } from "@/lib/backend-api";
 import CommandPalette from "./CommandPalette";
 
 export type DashboardRole = "USER" | "CREATOR" | "ADMIN";
@@ -121,9 +122,9 @@ const ROLE_DETAILS: Record<
         label: "My work",
         items: [
           { label: "Overview", href: "/creator", icon: LayoutDashboard },
-          { label: "Project requests", href: "/creator/requests", icon: FileText, badge: "2" },
+          { label: "Project requests", href: "/creator/requests", icon: FileText },
           { label: "My projects", href: "/creator/projects", icon: FolderKanban },
-          { label: "My tasks", href: "/creator/tasks", icon: ClipboardCheck, badge: "4" },
+          { label: "My tasks", href: "/creator/tasks", icon: ClipboardCheck },
           { label: "Submissions", href: "/creator/submissions", icon: Files },
           { label: "Feedback & messages", href: "/creator/feedback", icon: MessageSquare },
           { label: "My teams", href: "/creator/teams", icon: Users },
@@ -150,9 +151,9 @@ const ROLE_DETAILS: Record<
         label: "Operations",
         items: [
           { label: "Overview", href: "/admin", icon: LayoutDashboard },
-          { label: "Project requests", href: "/admin/requests", icon: FileText, badge: "5" },
+          { label: "Project requests", href: "/admin/requests", icon: FileText },
           { label: "Projects", href: "/admin/projects", icon: FolderKanban },
-          { label: "Creative reviews", href: "/admin/review", icon: ClipboardCheck, badge: "3" },
+          { label: "Creative reviews", href: "/admin/review", icon: ClipboardCheck },
         ],
       },
       {
@@ -162,7 +163,6 @@ const ROLE_DETAILS: Record<
             label: "Creator applications",
             href: "/admin/creator-applications",
             icon: Users,
-            badge: "2",
           },
           { label: "Team", href: "/admin/team", icon: BriefcaseBusiness },
           { label: "Services & pricing", href: "/admin/services", icon: Settings2 },
@@ -179,14 +179,8 @@ const ROLE_NOTIFICATIONS: Record<DashboardRole, { title: string; detail: string 
     { title: "Drafts submitted for review", detail: "Display Retargeting · 3 hours ago" },
     { title: "Brief question asked", detail: "Spring Promo Request · Yesterday" },
   ],
-  CREATOR: [
-    { title: "Feedback on your submission", detail: "Spring Launch · 35 minutes ago" },
-    { title: "New task assigned", detail: "Product Hook Variations · Today" },
-  ],
-  ADMIN: [
-    { title: "3 creative reviews waiting", detail: "Oldest submission · 4 hours ago" },
-    { title: "New project request", detail: "Northstar Outdoor · 1 hour ago" },
-  ],
+  CREATOR: [],
+  ADMIN: [],
 };
 
 function pageTitle(pathname: string, role: DashboardRole) {
@@ -238,6 +232,7 @@ function DashboardShellInner({
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [sidebarCounts, setSidebarCounts] = useState({ projectRequests: 0, creatorApplications: 0 });
 
   const config = ROLE_DETAILS[role];
   const title = useMemo(() => pageTitle(pathname, role), [pathname, role]);
@@ -254,6 +249,44 @@ function DashboardShellInner({
     }
     if (actualRole !== role) router.replace(ROLE_HOME[actualRole]);
   }, [actualRole, isPending, role, router, session]);
+
+  useEffect(() => {
+    if (isPending || !session || actualRole !== role || role === "USER") return;
+    let cancelled = false;
+
+    const refreshCounts = async () => {
+      try {
+        if (role === "ADMIN") {
+          const response = await backendFetch("/api/v1/requests/admin/overview", { cache: "no-store" });
+          const result = await response.json();
+          if (!cancelled && response.ok && result.success) {
+            setSidebarCounts({
+              projectRequests: Number(result.data?.counts?.newRequests) || 0,
+              creatorApplications: Number(result.data?.counts?.pendingCreatorApplications) || 0,
+            });
+          }
+        } else {
+          const response = await backendFetch("/api/v1/creator/offers", { cache: "no-store" });
+          const result = await response.json();
+          if (!cancelled && response.ok && result.success && Array.isArray(result.data)) {
+            const projectRequests = result.data.filter((offer: { status?: string }) =>
+              ["SENT", "COUNTERED_BY_ADMIN"].includes(String(offer.status)),
+            ).length;
+            setSidebarCounts({ projectRequests, creatorApplications: 0 });
+          }
+        }
+      } catch (error) {
+        console.error("Failed to refresh dashboard sidebar counts:", error);
+      }
+    };
+
+    void refreshCounts();
+    const interval = window.setInterval(() => void refreshCounts(), 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [actualRole, isPending, role, session]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -379,6 +412,18 @@ function DashboardShellInner({
             <div className="space-y-1">
               {group.items.map((item) => {
                 const Icon = item.icon;
+                const dynamicBadge = role === "ADMIN"
+                  ? item.href === "/admin/requests" ? sidebarCounts.projectRequests
+                    : item.href === "/admin/creator-applications" ? sidebarCounts.creatorApplications : 0
+                  : role === "CREATOR" && item.href === "/creator/requests" ? sidebarCounts.projectRequests
+                    : Number(item.badge) || 0;
+                const badgeLabel = role === "ADMIN" && item.href === "/admin/requests"
+                  ? `${dynamicBadge} new project requests`
+                  : role === "ADMIN" && item.href === "/admin/creator-applications"
+                    ? `${dynamicBadge} pending creator applications`
+                    : role === "CREATOR" && item.href === "/creator/requests"
+                      ? `${dynamicBadge} project offers awaiting your response`
+                      : item.badgeAriaLabel;
                 const active =
                   item.href === ROLE_HOME[role]
                     ? pathname === item.href
@@ -411,16 +456,16 @@ function DashboardShellInner({
                       <span className="min-w-0 flex-1 truncate">{item.label}</span>
                     )}
 
-                    {!collapsed && item.badge && (
+                    {!collapsed && dynamicBadge > 0 && (
                       <span
-                        aria-label={item.badgeAriaLabel || `${item.badge} items`}
+                        aria-label={badgeLabel || `${dynamicBadge} items`}
                         className={`min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] font-bold ${
                           active
                             ? "bg-[#D9480F] text-white shadow-xs"
                             : "bg-[#D9480F]/15 text-[#D9480F]"
                         }`}
                       >
-                        {item.badge}
+                        {dynamicBadge}
                       </span>
                     )}
                   </Link>
@@ -605,21 +650,27 @@ function DashboardShellInner({
                 aria-expanded={notificationsOpen}
               >
                 <Bell size={18} />
-                <span className="absolute right-[9px] top-[9px] flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#D9480F] opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#D9480F] ring-1.5 ring-white" />
-                </span>
+                {ROLE_NOTIFICATIONS[role].length > 0 && (
+                  <span className="absolute right-[9px] top-[9px] flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#D9480F] opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-[#D9480F] ring-1.5 ring-white" />
+                  </span>
+                )}
               </button>
               {notificationsOpen && (
                 <div className="absolute right-0 top-13 z-50 w-[min(360px,calc(100vw-28px))] overflow-hidden rounded-2xl border border-white/80 bg-white/95 backdrop-blur-2xl shadow-2xl">
                   <div className="flex items-center justify-between border-b border-black/[0.06] px-4 py-3 bg-[#FAF9F5]">
                     <p className="text-sm font-bold text-[#141413]">Notifications</p>
-                    <span className="rounded-full bg-[#D9480F]/15 px-2 py-0.5 text-[10px] font-bold text-[#D9480F]">
-                      3 unread
-                    </span>
+                    {ROLE_NOTIFICATIONS[role].length > 0 && (
+                      <span className="rounded-full bg-[#D9480F]/15 px-2 py-0.5 text-[10px] font-bold text-[#D9480F]">
+                        {ROLE_NOTIFICATIONS[role].length} unread
+                      </span>
+                    )}
                   </div>
                   <div className="divide-y divide-black/[0.05] max-h-72 overflow-y-auto">
-                    {ROLE_NOTIFICATIONS[role].map((notification) => (
+                    {ROLE_NOTIFICATIONS[role].length === 0 ? (
+                      <p className="px-4 py-8 text-center text-xs text-neutral-500">No new notifications.</p>
+                    ) : ROLE_NOTIFICATIONS[role].map((notification) => (
                       <div
                         key={notification.title}
                         className="px-4 py-3 hover:bg-[#FAF9F5] transition"

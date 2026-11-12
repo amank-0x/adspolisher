@@ -262,14 +262,20 @@ export const getMy = async (req: Request, res: Response) => {
 
 export const getAdminoverview = async (req: Request, res: Response) => {
   try {
+    const chartStart = new Date();
+    chartStart.setUTCHours(0, 0, 0, 0);
+    chartStart.setUTCDate(chartStart.getUTCDate() - 29);
     const [
       newRequestsCount,
       inReviewRequestsCount,
       totalRequestsCount,
       proposalsPendingCount,
       activeProjectsCount,
+      pendingCreatorApplicationsCount,
       recentRequests,
       activeProjects,
+      requestChartEvents,
+      projectChartEvents,
     ] = await withDatabaseRetry(() =>
       Promise.all([
         prismaClient.quoteRequest.count({ where: { status: "NEW" } }),
@@ -281,6 +287,7 @@ export const getAdminoverview = async (req: Request, res: Response) => {
         prismaClient.project.count({
           where: { status: { notIn: ["COMPLETED", "CANCELLED"] } },
         }),
+        prismaClient.creatorApplication.count({ where: { status: "PENDING" } }),
         prismaClient.quoteRequest.findMany({
           take: 10,
           orderBy: { createdAt: "desc" },
@@ -308,8 +315,31 @@ export const getAdminoverview = async (req: Request, res: Response) => {
             dueDate: true,
           },
         }),
+        prismaClient.quoteRequest.findMany({
+          where: { createdAt: { gte: chartStart } },
+          select: { createdAt: true },
+        }),
+        prismaClient.project.findMany({
+          where: { updatedAt: { gte: chartStart } },
+          select: { updatedAt: true },
+        }),
       ])
     );
+
+    const chartDays = Array.from({ length: 30 }, (_, index) => {
+      const date = new Date(chartStart);
+      date.setUTCDate(chartStart.getUTCDate() + index);
+      return { date: date.toISOString().slice(0, 10), requests: 0, activity: 0 };
+    });
+    const chartByDate = new Map(chartDays.map((day) => [day.date, day]));
+    for (const event of requestChartEvents) {
+      const day = chartByDate.get(event.createdAt.toISOString().slice(0, 10));
+      if (day) day.requests += 1;
+    }
+    for (const event of projectChartEvents) {
+      const day = chartByDate.get(event.updatedAt.toISOString().slice(0, 10));
+      if (day) day.activity += 1;
+    }
 
     // Build notifications for admin (all NEW requests or recent updates)
     const notifications = recentRequests
@@ -340,12 +370,17 @@ export const getAdminoverview = async (req: Request, res: Response) => {
           inReviewRequests: inReviewRequestsCount,
           proposalsPending: proposalsPendingCount,
           activeProjects: activeProjectsCount,
+          pendingCreatorApplications: pendingCreatorApplicationsCount,
           totalRequests: totalRequestsCount,
           unreadNotifications: newRequestsCount,
         },
         notifications,
         recentRequests,
         activeProjects,
+        charts: {
+          projectRequests: chartDays.map(({ date, requests }) => ({ date, count: requests })),
+          projectActivity: chartDays.map(({ date, activity }) => ({ date, count: activity })),
+        },
         serverTime: new Date().toISOString(),
       },
     });

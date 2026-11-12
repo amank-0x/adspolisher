@@ -69,6 +69,10 @@ interface AdminOverviewData {
     budget?: string | number | null;
     dueDate?: string | null;
   }>;
+  charts: {
+    projectRequests: Array<{ date: string; count: number }>;
+    projectActivity: Array<{ date: string; count: number }>;
+  };
   serverTime: string;
 }
 
@@ -84,8 +88,87 @@ const DEFAULT_DATA: AdminOverviewData = {
   notifications: [],
   recentRequests: [],
   activeProjects: [],
+  charts: { projectRequests: [], projectActivity: [] },
   serverTime: new Date().toISOString(),
 };
+
+function OverviewChart({
+  title,
+  description,
+  points,
+}: {
+  title: string;
+  description: string;
+  points: Array<{ date: string; count: number }>;
+}) {
+  const normalizedPoints = (Array.isArray(points) ? points : []).map((point) => ({
+    date: typeof point?.date === "string" ? point.date : "",
+    count: Number.isFinite(Number(point?.count)) ? Number(point.count) : 0,
+  }));
+  const chartPoints = normalizedPoints.length ? normalizedPoints : Array.from({ length: 30 }, () => ({ date: "", count: 0 }));
+  const maximum = Math.max(1, ...chartPoints.map((point) => point.count));
+  const plot = chartPoints.map((point, index) => ({
+    ...point,
+    x: 48 + (index * 904) / Math.max(1, chartPoints.length - 1),
+    y: 174 - (point.count / maximum) * 132,
+  }));
+  const linePath = plot.map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`).join(" ");
+  const areaPath = `${linePath} L${plot[plot.length - 1].x},174 L${plot[0].x},174 Z`;
+  const dateLabels = [0, 7, 14, 21, chartPoints.length - 1]
+    .filter((index, position, indexes) => index >= 0 && index < chartPoints.length && indexes.indexOf(index) === position)
+    .map((index) => ({ index, date: chartPoints[index].date }));
+  const total = normalizedPoints.reduce((sum, point) => sum + point.count, 0);
+
+  return (
+    <section className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-[0_12px_38px_rgba(37,99,235,0.10)]">
+      <div className="flex flex-col justify-between gap-3 border-b border-blue-50 px-5 py-5 sm:flex-row sm:items-center sm:px-7">
+        <div>
+          <h3 className="text-base font-bold text-slate-950">{title}</h3>
+          <p className="mt-1 text-xs text-slate-500">{description}</p>
+        </div>
+        <div className="flex items-baseline gap-2 self-start rounded-xl bg-blue-50 px-3.5 py-2 sm:self-auto">
+          <span className="text-xl font-extrabold tabular-nums text-blue-700">{total}</span>
+          <span className="text-[10px] font-bold uppercase tracking-wide text-blue-600">Last 30 days</span>
+        </div>
+      </div>
+      <div className="px-3 pb-4 pt-5 sm:px-6">
+        <div className="w-full overflow-hidden">
+          <svg viewBox="0 0 1000 218" role="img" aria-label={`${title} over the last 30 days`} className="h-56 w-full overflow-visible">
+            <defs>
+              <linearGradient id={`chart-fill-${title.replaceAll(" ", "-")}`} x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.24" />
+                <stop offset="100%" stopColor="#3B82F6" stopOpacity="0.015" />
+              </linearGradient>
+              <filter id={`chart-glow-${title.replaceAll(" ", "-")}`} x="-20%" y="-50%" width="140%" height="200%">
+                <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#2563EB" floodOpacity="0.28" />
+              </filter>
+            </defs>
+            {[42, 108, 174].map((y, index) => (
+              <g key={y}>
+                <line x1="48" x2="952" y1={y} y2={y} stroke="#E5EEF9" strokeDasharray={index === 2 ? "0" : "4 7"} />
+                <text x="38" y={y + 4} textAnchor="end" className="fill-slate-400" fontSize="10">
+                  {Math.round((maximum * (2 - index)) / 2)}
+                </text>
+              </g>
+            ))}
+            <path d={areaPath} fill={`url(#chart-fill-${title.replaceAll(" ", "-")})`} />
+            <path d={linePath} fill="none" stroke="#2563EB" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" filter={`url(#chart-glow-${title.replaceAll(" ", "-")})`} />
+            {plot.map((point, index) => (
+              <circle key={`${point.date}-${index}`} cx={point.x} cy={point.y} r="2.6" fill="#fff" stroke="#2563EB" strokeWidth="1.8">
+                <title>{point.date || "Date unavailable"}: {point.count}</title>
+              </circle>
+            ))}
+            {dateLabels.map(({ index, date }) => (
+              <text key={`${index}-${date}`} x={plot[index].x} y="203" textAnchor={index === 0 ? "start" : index === chartPoints.length - 1 ? "end" : "middle"} className="fill-slate-400" fontSize="10">
+                {date ? new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "—"}
+              </text>
+            ))}
+          </svg>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function formatTimeAgo(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime();
@@ -285,6 +368,19 @@ export default function AdminOverviewPage() {
             </Link>
           );
         })}
+      </div>
+
+      <div className="space-y-6">
+        <OverviewChart
+          title="Project Requests"
+          description="New project requests submitted each day."
+          points={data.charts?.projectRequests || []}
+        />
+        <OverviewChart
+          title="Project Activity"
+          description="Projects updated each day across the studio pipeline."
+          points={data.charts?.projectActivity || []}
+        />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)]">
