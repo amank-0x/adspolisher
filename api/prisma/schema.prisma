@@ -80,6 +80,30 @@ enum CreatorApplicationStatus {
   REJECTED
 }
 
+enum ProjectOfferStatus {
+  SENT
+  COUNTERED_BY_CREATOR
+  COUNTERED_BY_ADMIN
+  ACCEPTED
+  DECLINED
+  WITHDRAWN
+  EXPIRED
+}
+
+enum OfferNegotiationAction {
+  OFFER
+  COUNTER
+  ACCEPT
+  DECLINE
+  WITHDRAW
+}
+
+enum OfferNegotiationActor {
+  ADMIN
+  CREATOR
+  SYSTEM
+}
+
 // ------------------------------------
 // BETTER AUTH
 // ------------------------------------
@@ -109,6 +133,9 @@ model User {
   projectMessages      ProjectMessage[]
   uploadedDeliverables Deliverable[]     @relation("DeliverableUploader")
   projectMemberships   ProjectTeamMember[]
+  creatorOffers        ProjectOffer[] @relation("OfferCreator")
+  sentCreatorOffers    ProjectOffer[] @relation("OfferAdmin")
+  offerNegotiations    OfferNegotiationEntry[]
   auditLogs            AuditLog[]
 }
 
@@ -334,6 +361,7 @@ model Project {
   messages     ProjectMessage[]
   deliverables Deliverable[]
   teamMembers  ProjectTeamMember[]
+  offers       ProjectOffer[]
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 
@@ -349,11 +377,62 @@ model ProjectTeamMember {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   roleTitle String?  @default("Creator")
+  offerId   String?  @unique
+  offer     ProjectOffer? @relation(fields: [offerId], references: [id], onDelete: SetNull)
   joinedAt  DateTime @default(now())
 
   @@unique([projectId, userId])
   @@index([projectId])
   @@index([userId])
+}
+
+model ProjectOffer {
+  id             String            @id @default(cuid())
+  offerCode      String            @unique
+  projectId      String
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creatorId      String
+  creator        User              @relation("OfferCreator", fields: [creatorId], references: [id], onDelete: Restrict)
+  offeredById    String
+  offeredBy      User              @relation("OfferAdmin", fields: [offeredById], references: [id], onDelete: Restrict)
+  roleTitle      String            @default("Creator")
+  scopeSummary   String            @db.Text
+  paymentTerms   String?           @db.Text
+  currency       String            @default("INR") @db.VarChar(3)
+  currentAmount  Decimal           @db.Decimal(10, 2)
+  acceptedAmount Decimal?          @db.Decimal(10, 2)
+  proposedDueDate DateTime?
+  expiresAt      DateTime?
+  status         ProjectOfferStatus @default(SENT)
+  currentRound   Int               @default(1)
+  maxRounds      Int               @default(3)
+  declineReason  String?           @db.Text
+  sentAt         DateTime          @default(now())
+  respondedAt    DateTime?
+  negotiation    OfferNegotiationEntry[]
+  teamMember     ProjectTeamMember?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([creatorId, status])
+  @@index([projectId, status])
+  @@index([status, expiresAt])
+}
+
+model OfferNegotiationEntry {
+  id        String                  @id @default(cuid())
+  offerId   String
+  offer     ProjectOffer            @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  round     Int
+  action    OfferNegotiationAction
+  actorRole OfferNegotiationActor
+  actorId   String?
+  actor     User?                   @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  amount    Decimal?                @db.Decimal(10, 2)
+  message   String?                 @db.Text
+  createdAt DateTime                @default(now())
+
+  @@index([offerId, createdAt])
 }
 
 model ProjectMessage {

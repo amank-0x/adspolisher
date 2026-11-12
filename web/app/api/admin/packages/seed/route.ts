@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export async function POST(req: Request) {
   try {
-    const response = await fetch(`${API_BASE}/api/v1/packages/seed-defaults`, {
+    const response = await backendFetch(`${API_BASE}/api/v1/packages/seed-defaults`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

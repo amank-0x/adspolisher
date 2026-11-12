@@ -3,8 +3,137 @@ import prismaClient, { withDatabaseRetry } from "../config/db.js";
 import { z } from "zod";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 import type { ProjectStatus, DeliverableStatus } from "@prisma/client";
+import { sendProjectOfferEmail } from "../utils/sendProjectOfferEmail.js";
 
 const projectRouter: Router = Router();
+
+const createProjectOfferSchema = z.object({
+  creatorId: z.string().min(1),
+  roleTitle: z.string().trim().min(1).max(120),
+  scopeSummary: z.string().trim().min(1).max(5000),
+  amount: z.number().positive(),
+  currency: z.string().trim().length(3).toUpperCase().default("INR"),
+  paymentTerms: z.string().trim().max(2000).optional().nullable(),
+  proposedDueDate: z.string().datetime({ offset: true }).optional().nullable(),
+  expiresAt: z.string().datetime({ offset: true }).optional().nullable(),
+});
+
+projectRouter.post("/:id/offers", requireAdmin, async (req: Request, res: Response) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const parsed = createProjectOfferSchema.safeParse(req.body);
+  if (!id || !parsed.success) return res.status(400).json({ success: false, message: "Check the creator, price, role, and project scope." });
+  try {
+    const [project, creator] = await Promise.all([
+      prismaClient.project.findUnique({ where: { id } }),
+      prismaClient.user.findUnique({ where: { id: parsed.data.creatorId } }),
+    ]);
+    if (!project) return res.status(404).json({ success: false, message: "Project not found." });
+    if (!creator || creator.appRole !== "CREATOR") return res.status(404).json({ success: false, message: "Creator account not found." });
+    const offer = await prismaClient.$transaction(async (tx) => {
+      const created = await tx.projectOffer.create({ data: {
+        offerCode: `OFR-${Date.now().toString(36).toUpperCase()}`,
+        projectId: id,
+        creatorId: creator.id,
+        offeredById: String(res.locals.adminUserId),
+        roleTitle: parsed.data.roleTitle,
+        scopeSummary: parsed.data.scopeSummary,
+        currentAmount: parsed.data.amount,
+        currency: parsed.data.currency,
+        paymentTerms: parsed.data.paymentTerms ?? null,
+        proposedDueDate: parsed.data.proposedDueDate ? new Date(parsed.data.proposedDueDate) : null,
+        expiresAt: parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : null,
+        status: "SENT",
+      }});
+      await tx.offerNegotiationEntry.create({ data: { offerId: created.id, round: 1, action: "OFFER", actorRole: "ADMIN", actorId: String(res.locals.adminUserId), amount: parsed.data.amount, message: parsed.data.scopeSummary } });
+      return created;
+    });
+    let emailSent = false;
+    try {
+      const appUrl = (process.env.NEXT_APP_URL || "https://www.adspolisher.com").replace(/\/$/, "");
+      await sendProjectOfferEmail(creator.email, {
+        name: creator.name,
+        projectTitle: project.title,
+        offerCode: offer.offerCode,
+        amount: offer.currentAmount.toString(),
+        currency: offer.currency,
+        roleTitle: offer.roleTitle,
+        dueDate: offer.proposedDueDate,
+        offerUrl: `${appUrl}/creator/requests`,
+      });
+      emailSent = true;
+    } catch (error) { console.error("[PROJECT OFFER EMAIL ERROR]", error); }
+    return res.status(201).json({ success: true, emailSent, message: emailSent ? "Offer saved and emailed to creator." : "Offer saved, but the email could not be sent.", data: offer });
+  } catch (error) {
+    console.error("[PROJECT OFFER CREATE ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to create project offer." });
+  }
+});
+
+projectRouter.get("/:id/offers", requireAdmin, async (req: Request, res: Response) => {
+  const projectId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  if (!projectId) return res.status(400).json({ success: false, message: "Project id is required." });
+  try {
+    const offers = await prismaClient.projectOffer.findMany({
+      where: { projectId }, orderBy: { createdAt: "desc" },
+      include: { creator: { select: { id: true, name: true, email: true } }, negotiation: { orderBy: { createdAt: "asc" } } },
+    });
+    return res.json({ success: true, data: offers });
+  } catch (error) {
+    console.error("[PROJECT OFFERS ADMIN GET ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to load project offers." });
+  }
+});
+
+projectRouter.patch("/:projectId/offers/:offerId", requireAdmin, async (req: Request, res: Response) => {
+  const projectId = Array.isArray(req.params.projectId) ? req.params.projectId[0] : req.params.projectId;
+  const offerId = Array.isArray(req.params.offerId) ? req.params.offerId[0] : req.params.offerId;
+  if (!projectId || !offerId) return res.status(400).json({ success: false, message: "Project and offer ids are required." });
+  const inputSchema = z.discriminatedUnion("action", [
+    z.object({ action: z.literal("ACCEPT_COUNTER") }),
+    z.object({ action: z.literal("COUNTER"), amount: z.number().positive(), message: z.string().trim().min(1).max(2000) }),
+  ]);
+  const parsed = inputSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success: false, message: "Provide a valid offer response." });
+  const counterData = parsed.data.action === "COUNTER" ? parsed.data : null;
+  try {
+    const offer = await prismaClient.projectOffer.findFirst({ where: { id: offerId, projectId }, include: { creator: true, project: true } });
+    if (!offer || offer.status !== "COUNTERED_BY_CREATOR") return res.status(409).json({ success: false, message: "There is no creator counter-offer awaiting a response." });
+    if (offer.currentRound >= offer.maxRounds && parsed.data.action === "COUNTER") return res.status(409).json({ success: false, message: "The maximum negotiation rounds have been reached." });
+    const updated = await prismaClient.$transaction(async (tx) => {
+      const isAccept = parsed.data.action === "ACCEPT_COUNTER";
+      const round = isAccept ? offer.currentRound : offer.currentRound + 1;
+      const row = await tx.projectOffer.update({ where: { id: offer.id }, data: {
+        status: isAccept ? "ACCEPTED" : "COUNTERED_BY_ADMIN", currentRound: round,
+        ...(isAccept ? { acceptedAmount: offer.currentAmount } : { currentAmount: counterData!.amount }), respondedAt: new Date(),
+      } });
+      await tx.offerNegotiationEntry.create({ data: {
+        offerId: offer.id, round, action: isAccept ? "ACCEPT" : "COUNTER", actorRole: "ADMIN", actorId: String(res.locals.adminUserId),
+        amount: isAccept ? offer.currentAmount : counterData!.amount, message: isAccept ? null : counterData!.message,
+      } });
+      if (isAccept) {
+        await tx.projectTeamMember.upsert({ where: { projectId_userId: { projectId: offer.projectId, userId: offer.creatorId } },
+          update: { roleTitle: offer.roleTitle, offerId: offer.id },
+          create: { projectId: offer.projectId, userId: offer.creatorId, roleTitle: offer.roleTitle, offerId: offer.id } });
+        const project = await tx.project.findUnique({ where: { id: offer.projectId }, select: { assignedToId: true } });
+        if (project && !project.assignedToId) await tx.project.update({ where: { id: offer.projectId }, data: { assignedToId: offer.creatorId } });
+      }
+      return row;
+    });
+    let emailSent = false;
+    if (counterData) {
+      try {
+        const appUrl = (process.env.NEXT_APP_URL || "https://www.adspolisher.com").replace(/\/$/, "");
+        await sendProjectOfferEmail(offer.creator.email, { name: offer.creator.name, projectTitle: offer.project.title, offerCode: offer.offerCode,
+          amount: updated.currentAmount.toString(), currency: offer.currency, roleTitle: offer.roleTitle, dueDate: offer.proposedDueDate, offerUrl: `${appUrl}/creator/requests` });
+        emailSent = true;
+      } catch (error) { console.error("[PROJECT OFFER EMAIL ERROR]", error); }
+    }
+    return res.json({ success: true, emailSent, data: updated, message: parsed.data.action === "ACCEPT_COUNTER" ? "Creator's proposed fee accepted; creator added to the project team." : emailSent ? "Revised offer sent to creator." : "Revised offer saved, but email could not be sent." });
+  } catch (error) {
+    console.error("[PROJECT OFFER ADMIN RESPONSE ERROR]", error);
+    return res.status(500).json({ success: false, message: "Failed to respond to creator counter-offer." });
+  }
+});
 
 // Validation schema for updating a project
 const updateProjectSchema = z.object({

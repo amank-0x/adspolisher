@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useSession } from '@/lib/auth-client';
+import { backendFetch } from '@/lib/backend-api';
 import {
   FileText,
   Plus,
@@ -195,7 +196,7 @@ export default function CustomerRequestsListPage() {
       if (email) params.append('email', email);
       if (userId) params.append('userId', userId);
 
-      const res = await fetch(`/api/requests?${params.toString()}`);
+      const res = await backendFetch(`/api/requests?${params.toString()}`);
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {

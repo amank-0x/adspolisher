@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -11,7 +12,7 @@ function authHeaders(req: Request) {
 }
 
 async function proxy(req: Request, id: string, suffix = "") {
-  const response = await fetch(`${API_BASE}/api/v1/admin/proposals/${id}${suffix}`, {
+  const response = await backendFetch(`${API_BASE}/api/v1/admin/proposals/${id}${suffix}`, {
     method: req.method,
     headers: authHeaders(req),
     ...(req.method === "PATCH" ? { body: JSON.stringify(await req.json()) } : {}),

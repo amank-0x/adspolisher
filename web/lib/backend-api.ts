@@ -24,6 +24,8 @@ export function dedupedFetch(input: RequestInfo | URL, init: RequestInit = {}) {
 }
 
 export function backendUrl(path: string) {
+  if (/^https?:\/\//i.test(path)) return path;
+  if (!path.startsWith("/api/v1/")) return path;
   return `${configuredApiBase}${path}`;
 }
 

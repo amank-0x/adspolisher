@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { backendFetch } from '@/lib/backend-api';
 import {
   ArrowLeft,
   FileText,
@@ -84,7 +85,7 @@ export default function CustomerRequestDetailPage({ params }: PageProps) {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch(`/api/requests/${id}`);
+        const res = await backendFetch(`/api/requests/${id}`);
         if (!res.ok) {
           throw new Error(`Failed to load request (${res.status})`);
         }

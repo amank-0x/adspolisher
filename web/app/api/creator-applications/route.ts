@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
 
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
       type: file.type,
     }));
 
-    const response = await fetch(`${apiBaseUrl}/api/v1/creator-applications`, {
+    const response = await backendFetch(`${apiBaseUrl}/api/v1/creator-applications`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

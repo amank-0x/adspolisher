@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { backendFetch } from "@/lib/backend-api";
 import {
   Tag,
   Plus,
@@ -129,8 +130,8 @@ export default function AdminServicesPage() {
     try {
       setLoading(true);
       const [pkgRes, srvRes] = await Promise.all([
-        fetch("/api/admin/packages?all=true"),
-        fetch("/api/admin/services?all=true"),
+        backendFetch("/api/admin/packages?all=true"),
+        backendFetch("/api/admin/services?all=true"),
       ]);
 
       const pkgData = await pkgRes.json();
@@ -176,7 +177,7 @@ export default function AdminServicesPage() {
   // Seed default starter packages
   const handleSeedDefaults = async () => {
     try {
-      const res = await fetch("/api/admin/packages/seed", { method: "POST" });
+      const res = await backendFetch("/api/admin/packages/seed", { method: "POST" });
       const data = await res.json();
       if (data.success) {
         showToast(data.message || "Default packages seeded successfully!");
@@ -294,7 +295,7 @@ export default function AdminServicesPage() {
       const url = editingPkg ? `/api/admin/packages/${editingPkg.id}` : "/api/admin/packages";
       const method = editingPkg ? "PATCH" : "POST";
 
-      const res = await fetch(url, {
+      const res = await backendFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -319,7 +320,7 @@ export default function AdminServicesPage() {
   // Toggle package active status directly
   const handleToggleActive = async (pkg: PackageItem) => {
     try {
-      const res = await fetch(`/api/admin/packages/${pkg.id}`, {
+      const res = await backendFetch(`/api/admin/packages/${pkg.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: !pkg.isActive }),
@@ -339,7 +340,7 @@ export default function AdminServicesPage() {
   // Toggle package popular badge directly
   const handleTogglePopular = async (pkg: PackageItem) => {
     try {
-      const res = await fetch(`/api/admin/packages/${pkg.id}`, {
+      const res = await backendFetch(`/api/admin/packages/${pkg.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPopular: !pkg.isPopular }),
@@ -360,7 +361,7 @@ export default function AdminServicesPage() {
   const handleDeletePackage = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete or archive package "${name}"?`)) return;
     try {
-      const res = await fetch(`/api/admin/packages/${id}`, { method: "DELETE" });
+      const res = await backendFetch(`/api/admin/packages/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
         showToast(data.message || "Package deleted.");

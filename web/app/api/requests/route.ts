@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -7,7 +8,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // Forward to Express backend with incoming cookies and headers
-    const response = await fetch(`${API_BASE}/api/v1/requests`, {
+    const response = await backendFetch(`${API_BASE}/api/v1/requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -38,7 +39,7 @@ export async function GET(req: Request) {
     const queryString = searchParams.toString();
     const endpoint = `${API_BASE}/api/v1/requests/my${queryString ? `?${queryString}` : ""}`;
 
-    const response = await fetch(endpoint, {
+    const response = await backendFetch(endpoint, {
       headers: {
         cookie: req.headers.get("cookie") || "",
         authorization: req.headers.get("authorization") || "",

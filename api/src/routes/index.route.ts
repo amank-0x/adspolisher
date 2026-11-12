@@ -7,6 +7,7 @@ import projectRouter from "./project.route.js";
 import portfolioRouter from "./portfolio.route.js";
 import creatorApplicationRouter, { adminCreatorApplicationRouter } from "./creator-application.route.js";
 import { serviceRouter, packageRouter } from "./service-package.route.js";
+import creatorRouter from "./creator.route.js";
 
 const indexRouter: Router = Router();
 
@@ -23,5 +24,6 @@ indexRouter.use("/services", serviceRouter);
 indexRouter.use("/admin/services", serviceRouter);
 indexRouter.use("/packages", packageRouter);
 indexRouter.use("/admin/packages", packageRouter);
+indexRouter.use("/creator", creatorRouter);
 
 export default indexRouter;

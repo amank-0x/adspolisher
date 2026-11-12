@@ -118,14 +118,6 @@ type ProjectDetail = {
   };
 };
 
-type Creator = {
-  id: string;
-  name: string;
-  email: string;
-  image: string | null;
-  appRole: string;
-};
-
 const STATUS_CONFIG: Record<
   ProjectStatus,
   { label: string; bg: string; text: string; border: string; dot: string; desc: string }
@@ -236,7 +228,6 @@ export default function AdminProjectDetailPage({
   const projectId = unwrappedParams.id;
 
   const [project, setProject] = useState<ProjectDetail | null>(null);
-  const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingStatus, setSavingStatus] = useState(false);
   const [savingDetails, setSavingDetails] = useState(false);
@@ -248,7 +239,6 @@ export default function AdminProjectDetailPage({
   const [editDueDate, setEditDueDate] = useState("");
   const [editBudget, setEditBudget] = useState("");
   const [editCurrency, setEditCurrency] = useState("USD");
-  const [editAssignedToId, setEditAssignedToId] = useState("");
 
   // New deliverable modal/form state
   const [showAddDeliverable, setShowAddDeliverable] = useState(false);
@@ -277,7 +267,6 @@ export default function AdminProjectDetailPage({
         );
         setEditBudget(data.data.budget ? String(data.data.budget) : "");
         setEditCurrency(data.data.currency || "USD");
-        setEditAssignedToId(data.data.assignedTo?.id || "");
       } else {
         showToast(data.message || "Failed to load project", "error");
       }
@@ -289,21 +278,8 @@ export default function AdminProjectDetailPage({
     }
   };
 
-  const loadCreators = async () => {
-    try {
-      const res = await backendFetch("/api/v1/projects/creators");
-      const data = await res.json();
-      if (data.success && Array.isArray(data.data)) {
-        setCreators(data.data);
-      }
-    } catch (err) {
-      console.error("[LOAD CREATORS ERROR]", err);
-    }
-  };
-
   useEffect(() => {
     void loadProject();
-    void loadCreators();
   }, [projectId]);
 
   // Update Status action
@@ -311,7 +287,7 @@ export default function AdminProjectDetailPage({
     if (!project || savingStatus) return;
     setSavingStatus(true);
     try {
-      const res = await fetch(`/api/admin/projects/${projectId}`, {
+      const res = await backendFetch(`/api/admin/projects/${projectId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -331,14 +307,14 @@ export default function AdminProjectDetailPage({
     }
   };
 
-  // Save Project Details (due date, budget, assigned creator, title, brief)
+  // Save project details. Creator requests are managed from the team page.
   const handleSaveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
     if (savingDetails) return;
     setSavingDetails(true);
 
     try {
-      const res = await fetch(`/api/admin/projects/${projectId}`, {
+      const res = await backendFetch(`/api/admin/projects/${projectId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -347,7 +323,6 @@ export default function AdminProjectDetailPage({
           dueDate: editDueDate ? new Date(editDueDate).toISOString() : null,
           budget: editBudget ? Number(editBudget) : null,
           currency: editCurrency,
-          assignedToId: editAssignedToId || null,
         }),
       });
       const data = await res.json();
@@ -376,7 +351,7 @@ export default function AdminProjectDetailPage({
 
     setAddingDeliverable(true);
     try {
-      const res = await fetch(`/api/admin/projects/${projectId}/deliverables`, {
+      const res = await backendFetch(`/api/admin/projects/${projectId}/deliverables`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -413,7 +388,7 @@ export default function AdminProjectDetailPage({
     newStatus: DeliverableStatus
   ) => {
     try {
-      const res = await fetch(
+      const res = await backendFetch(
         `/api/admin/projects/${projectId}/deliverables/${deliverableId}`,
         {
           method: "PATCH",
@@ -437,7 +412,7 @@ export default function AdminProjectDetailPage({
   const handleDeleteDeliverable = async (deliverableId: string) => {
     if (!confirm("Are you sure you want to remove this deliverable?")) return;
     try {
-      const res = await fetch(
+      const res = await backendFetch(
         `/api/admin/projects/${projectId}/deliverables/${deliverableId}`,
         {
           method: "DELETE",
@@ -1075,7 +1050,7 @@ export default function AdminProjectDetailPage({
           <section className="rounded-3xl border border-black/[0.08] bg-white/85 p-6 shadow-sm backdrop-blur-xl">
             <h2 className="text-base font-bold text-neutral-900">Project Management</h2>
             <p className="mt-1 text-xs text-neutral-500">
-              Assign creators, set production deadlines, and manage budget.
+              Manage project details and deadlines. Creator offers are sent from the team page.
             </p>
 
             <form onSubmit={handleSaveDetails} className="mt-5 space-y-4">
@@ -1100,24 +1075,12 @@ export default function AdminProjectDetailPage({
                 </select>
               </div>
 
-              {/* Assign Creator Pod */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">
-                  Assigned Creator Pod
-                </label>
-                <select
-                  value={editAssignedToId}
-                  onChange={(e) => setEditAssignedToId(e.target.value)}
-                  className="mt-1.5 w-full rounded-xl border border-black/10 bg-white px-3.5 py-2 text-xs font-medium text-neutral-900 focus:border-[#4F46E5] focus:outline-none focus:ring-1 focus:ring-[#4F46E5]"
-                >
-                  <option value="">Unassigned (Open Pool)</option>
-                  {creators.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name || c.email} ({c.appRole})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Link
+                href={`/admin/team?projectId=${projectId}`}
+                className="flex w-full items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-3 text-xs font-bold text-indigo-800 transition hover:bg-indigo-100"
+              >
+                Request a creator and set an offer <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
 
               {/* Due Date */}
               <div>
@@ -1220,7 +1183,7 @@ export default function AdminProjectDetailPage({
                 href={`/admin/team?projectId=${project.id}`}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-[#4F46E5] hover:underline"
               >
-                Assemble Team <ArrowRight className="h-3 w-3" />
+                Request Creators <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
             <p className="mt-1 text-xs text-neutral-500">
@@ -1255,7 +1218,7 @@ export default function AdminProjectDetailPage({
                     href={`/admin/team?projectId=${project.id}`}
                     className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:underline"
                   >
-                    + Build Team Pod
+                    + Request a Creator
                   </Link>
                 </div>
               )}

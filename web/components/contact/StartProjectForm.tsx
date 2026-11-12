@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { CheckCircle2, AlertCircle, X, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useSearchParams } from "next/navigation";
+import { backendFetch } from "@/lib/backend-api";
 
 interface FormErrors {
   name?: string;
@@ -197,7 +198,7 @@ export default function StartProjectForm() {
         formData.append("files", file);
       });
 
-      const res = await fetch("/api/start-project", {
+      const res = await backendFetch("/api/start-project", {
         method: "POST",
         body: formData,
       });

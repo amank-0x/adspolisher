@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -15,7 +16,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const endpoint = `${API_BASE}/api/v1/admin/portfolio/creators/${id}`;
 
-    const response = await fetch(endpoint, {
+    const response = await backendFetch(endpoint, {
       headers: authHeaders(req),
       cache: "no-store",
     });

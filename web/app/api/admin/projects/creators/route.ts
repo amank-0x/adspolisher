@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -6,7 +7,7 @@ export async function GET(req: Request) {
   try {
     const endpoint = `${API_BASE}/api/v1/projects/creators`;
 
-    const response = await fetch(endpoint, {
+    const response = await backendFetch(endpoint, {
       headers: {
         cookie: req.headers.get("cookie") || "",
         authorization: req.headers.get("authorization") || "",

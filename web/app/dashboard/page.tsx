@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { StageStepper } from '@/components/dashboard/StageStepper';
+import { backendFetch } from '@/lib/backend-api';
 
 // Summary metrics data
 const SUMMARY_TILES = [
@@ -296,7 +297,7 @@ export default function CustomerDashboardPage() {
         const params = new URLSearchParams();
         if (email) params.append('email', email);
         if (userId) params.append('userId', userId);
-        const res = await fetch(`/api/dashboard/overview?${params.toString()}`);
+        const res = await backendFetch(`/api/dashboard/overview?${params.toString()}`);
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {

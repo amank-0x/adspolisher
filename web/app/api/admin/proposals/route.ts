@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -13,7 +14,7 @@ function authHeaders(req: Request, includeContentType = false) {
 export async function GET(req: Request) {
   try {
     const query = new URL(req.url).search;
-    const response = await fetch(`${API_BASE}/api/v1/admin/proposals${query}`, {
+    const response = await backendFetch(`${API_BASE}/api/v1/admin/proposals${query}`, {
       headers: authHeaders(req),
       cache: "no-store",
     });
@@ -27,7 +28,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const response = await fetch(`${API_BASE}/api/v1/admin/proposals`, {
+    const response = await backendFetch(`${API_BASE}/api/v1/admin/proposals`, {
       method: "POST",
       headers: authHeaders(req, true),
       body: JSON.stringify(await req.json()),

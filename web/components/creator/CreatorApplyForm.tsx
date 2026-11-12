@@ -3,6 +3,7 @@
 import React, { useRef, useState } from "react";
 import { CheckCircle2, AlertCircle, X, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { backendFetch } from "@/lib/backend-api";
 
 interface FormErrors {
   name?: string;
@@ -197,7 +198,7 @@ export default function CreatorApplyForm() {
         formData.append("files", file);
       });
 
-      const res = await fetch("/api/creator-applications", {
+      const res = await backendFetch("/api/creator-applications", {
         method: "POST",
         body: formData,
       });

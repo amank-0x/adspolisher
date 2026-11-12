@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -16,7 +17,7 @@ export async function GET(req: Request) {
     const queryString = searchParams.toString();
     const endpoint = `${API_BASE}/api/v1/packages${queryString ? `?${queryString}` : "?all=true"}`;
 
-    const response = await fetch(endpoint, {
+    const response = await backendFetch(endpoint, {
       headers: authHeaders(req),
       cache: "no-store",
     });
@@ -35,7 +36,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const response = await fetch(`${API_BASE}/api/v1/packages`, {
+    const response = await backendFetch(`${API_BASE}/api/v1/packages`, {
       method: "POST",
       headers: authHeaders(req),
       body: JSON.stringify(body),

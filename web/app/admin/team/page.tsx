@@ -95,6 +95,8 @@ type Creator = {
   }[];
 };
 
+type ProjectOffer = { id: string; offerCode: string; status: string; currentAmount: string; currency: string; roleTitle: string; scopeSummary: string; creator: { id: string; name: string; email: string }; negotiation: { id: string; action: string; amount: string | null; message: string | null; actorRole: string }[] };
+
 const DISCIPLINE_PRESETS = [
   "Lead Art Director",
   "Senior Motion Designer",
@@ -139,6 +141,10 @@ function AdminTeamPageInner() {
 
   // Discipline selection state per creator when adding to team
   const [selectedDisciplines, setSelectedDisciplines] = useState<Record<string, string>>({});
+  const [offerAmounts, setOfferAmounts] = useState<Record<string, string>>({});
+  const [offerScopes, setOfferScopes] = useState<Record<string, string>>({});
+  const [projectOffers, setProjectOffers] = useState<ProjectOffer[]>([]);
+  const [counterAmounts, setCounterAmounts] = useState<Record<string, string>>({});
   const [processingUserIds, setProcessingUserIds] = useState<Record<string, boolean>>({});
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
@@ -183,6 +189,30 @@ function AdminTeamPageInner() {
   useEffect(() => {
     void loadData();
   }, []);
+
+  useEffect(() => {
+    if (!selectedProjectId) { setProjectOffers([]); return; }
+    let active = true;
+    void backendFetch(`/api/v1/projects/${selectedProjectId}/offers`).then((response) => response.json()).then((payload) => {
+      if (active && payload.success) setProjectOffers(payload.data || []);
+    }).catch(() => { if (active) setProjectOffers([]); });
+    return () => { active = false; };
+  }, [selectedProjectId]);
+
+  const respondToCounter = async (offer: ProjectOffer, action: "ACCEPT_COUNTER" | "COUNTER") => {
+    try {
+      const response = await backendFetch(`/api/v1/projects/${selectedProjectId}/offers/${offer.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(action === "COUNTER" ? { action, amount: Number(counterAmounts[offer.id]), message: "We have reviewed your fee request and are proposing this revised amount." } : { action }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success) throw new Error(payload.message || "Could not respond to counter-offer.");
+      showToast(payload.message);
+      const refreshed = await backendFetch(`/api/v1/projects/${selectedProjectId}/offers`).then((r) => r.json());
+      if (refreshed.success) setProjectOffers(refreshed.data || []);
+      void loadData();
+    } catch (error) { showToast(error instanceof Error ? error.message : "Could not respond to counter-offer.", "error"); }
+  };
 
   // Update selectedProjectId if query param changes
   useEffect(() => {
@@ -239,25 +269,28 @@ function AdminTeamPageInner() {
     setProcessingUserIds((prev) => ({ ...prev, [creatorId]: true }));
 
     try {
-      const res = await backendFetch(`/api/v1/projects/${selectedProjectId}/team`, {
+      const res = await backendFetch(`/api/v1/projects/${selectedProjectId}/offers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: creatorId,
+          creatorId,
           roleTitle: discipline,
+          scopeSummary: offerScopes[creatorId] || "",
+          amount: Number(offerAmounts[creatorId]),
+          currency: "INR",
         }),
       });
 
       const data = await res.json();
       if (data.success) {
-        showToast(data.message || "Creator added to team");
+        showToast(data.message || "Project offer sent to creator");
         void loadData();
       } else {
         showToast(data.message || "Failed to add creator to team", "error");
       }
     } catch (err: any) {
       console.error("[ADD MEMBER ERROR]", err);
-      showToast("Network error while adding member", "error");
+      showToast("Network error while sending project offer", "error");
     } finally {
       setProcessingUserIds((prev) => ({ ...prev, [creatorId]: false }));
     }
@@ -585,6 +618,18 @@ function AdminTeamPageInner() {
                 )}
               </div>
 
+              <section className="rounded-3xl border border-black/[0.08] bg-white/85 p-6 shadow-sm backdrop-blur-xl">
+                <div className="flex items-center justify-between gap-3"><div><h3 className="text-base font-bold text-neutral-900">Project offers</h3><p className="mt-1 text-xs text-neutral-500">Offer history and creator fee counters for this project.</p></div><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-bold text-neutral-600">{projectOffers.length}</span></div>
+                <div className="mt-4 space-y-3">
+                  {projectOffers.length === 0 ? <p className="rounded-xl bg-neutral-50 p-4 text-sm text-neutral-500">No offers sent for this project yet.</p> : projectOffers.map((offer) => <article key={offer.id} className="rounded-2xl border border-black/[0.06] p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-sm font-bold">{offer.creator.name || offer.creator.email} <span className="font-normal text-neutral-500">· {offer.roleTitle}</span></p><p className="text-xs text-neutral-500">{offer.offerCode} · {offer.creator.email}</p></div><span className="rounded-full bg-neutral-100 px-2.5 py-1 text-[10px] font-bold uppercase">{offer.status.replaceAll("_", " ")}</span></div>
+                    <p className="mt-2 text-xs text-neutral-600">Current fee: <strong>{offer.currency} {Number(offer.currentAmount).toLocaleString()}</strong></p>
+                    {offer.status === "COUNTERED_BY_CREATOR" && <div className="mt-3 flex flex-wrap items-center gap-2"><button type="button" onClick={() => void respondToCounter(offer, "ACCEPT_COUNTER")} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white">Accept creator fee</button><input type="number" min="1" step="0.01" value={counterAmounts[offer.id] || ""} onChange={(event) => setCounterAmounts((prev) => ({ ...prev, [offer.id]: event.target.value }))} placeholder={`Revised fee (${offer.currency})`} className="w-40 rounded-lg border border-black/10 px-3 py-2 text-xs"/><button type="button" disabled={!Number(counterAmounts[offer.id])} onClick={() => void respondToCounter(offer, "COUNTER")} className="rounded-lg bg-[#4F46E5] px-3 py-2 text-xs font-bold text-white disabled:opacity-50">Send revised offer</button></div>}
+                    <details className="mt-3 text-xs text-neutral-600"><summary className="cursor-pointer font-semibold">Negotiation history</summary><div className="mt-2 space-y-2">{offer.negotiation.map((entry) => <p key={entry.id} className="rounded-lg bg-neutral-50 p-2"><strong>{entry.actorRole} · {entry.action}</strong>{entry.amount ? ` · ${offer.currency} ${Number(entry.amount).toLocaleString()}` : ""}{entry.message ? <span className="block mt-1">{entry.message}</span> : null}</p>)}</div></details>
+                  </article>)}
+                </div>
+              </section>
+
               {/* Current Creative Pod Members */}
               <section className="rounded-3xl border border-black/[0.08] bg-white/85 p-6 shadow-sm backdrop-blur-xl">
                 <div className="flex items-center justify-between">
@@ -793,15 +838,34 @@ function AdminTeamPageInner() {
                                   ))}
                                 </select>
 
-                                {/* Add Member Button */}
+                                <input
+                                  type="number"
+                                  min="1"
+                                  step="0.01"
+                                  required
+                                  placeholder="Offer amount (INR)"
+                                  aria-label={`Project fee for ${creator.name || creator.email}`}
+                                  value={offerAmounts[creator.id] || ""}
+                                  onChange={(event) => setOfferAmounts((current) => ({ ...current, [creator.id]: event.target.value }))}
+                                  className="w-36 rounded-xl border border-black/10 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-800 focus:border-[#4F46E5] focus:outline-none"
+                                />
+                                <textarea
+                                  rows={2}
+                                  required
+                                  placeholder="Creator-facing scope and deliverables"
+                                  aria-label={`Offer scope for ${creator.name || creator.email}`}
+                                  value={offerScopes[creator.id] || ""}
+                                  onChange={(event) => setOfferScopes((current) => ({ ...current, [creator.id]: event.target.value }))}
+                                  className="w-full rounded-xl border border-black/10 bg-neutral-50 px-3 py-2 text-xs text-neutral-800 focus:border-[#4F46E5] focus:outline-none sm:max-w-64"
+                                />
                                 <button
                                   type="button"
-                                  disabled={isProcessing}
+                                  disabled={isProcessing || !Number(offerAmounts[creator.id]) || !offerScopes[creator.id]?.trim()}
                                   onClick={() => handleAddMember(creator.id)}
                                   className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#4F46E5] disabled:opacity-50"
                                 >
-                                  <UserPlus className="h-3.5 w-3.5" />
-                                  {isProcessing ? "Adding…" : "Add to Team"}
+                                  <Mail className="h-3.5 w-3.5" />
+                                  {isProcessing ? "Sending…" : "Send request to creator"}
                                 </button>
                               </>
                             )}

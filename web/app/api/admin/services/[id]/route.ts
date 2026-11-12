@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -15,7 +16,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const { id } = await params;
     const body = await req.json();
 
-    const response = await fetch(`${API_BASE}/api/v1/services/${id}`, {
+    const response = await backendFetch(`${API_BASE}/api/v1/services/${id}`, {
       method: "PATCH",
       headers: authHeaders(req),
       body: JSON.stringify(body),
@@ -35,7 +36,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const response = await fetch(`${API_BASE}/api/v1/services/${id}`, {
+    const response = await backendFetch(`${API_BASE}/api/v1/services/${id}`, {
       method: "DELETE",
       headers: authHeaders(req),
     });

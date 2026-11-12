@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { backendFetch } from "@/lib/backend-api";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -87,7 +88,7 @@ ${additionalNotes ? `Client Notes:\n${additionalNotes}` : "Inquiry submitted via
     };
 
     // Forward to Express API server to persist in Neon PostgreSQL
-    const backendRes = await fetch(`${API_BASE}/api/v1/requests`, {
+    const backendRes = await backendFetch(`${API_BASE}/api/v1/requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

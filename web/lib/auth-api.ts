@@ -1,9 +1,10 @@
 import { authClient } from "./auth-client";
+import { backendFetch } from "./backend-api";
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080").replace(/\/$/, "");
 
 async function requestPasswordRecovery(path: string, body: Record<string, string>) {
-  const response = await fetch(`${API_URL}/api/v1/auth/${path}`, {
+  const response = await backendFetch(`${API_URL}/api/v1/auth/${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/lib/auth-client';
+import { backendFetch } from '@/lib/backend-api';
 import {
   ArrowLeft,
   ArrowRight,
@@ -189,7 +190,7 @@ export default function NewCustomerRequestPage() {
       };
 
       // Send to API endpoint (which connects directly to Neon DB)
-      const res = await fetch('/api/requests', {
+      const res = await backendFetch('/api/requests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
