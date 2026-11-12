@@ -28,6 +28,20 @@ async function resolveCreatorUser(userId: string) {
       return promoted;
     }
   }
+
+  // A creator invited directly to a project also has a valid creator grant,
+  // even when their application record is missing or predates role sync.
+  const invitedToProject = await prismaClient.projectOffer.findFirst({
+    where: { creatorId: currentUser.id },
+    select: { id: true },
+  });
+  if (invitedToProject) {
+    return prismaClient.user.update({
+      where: { id: currentUser.id },
+      data: { appRole: "CREATOR" },
+      select: { id: true, name: true, email: true, appRole: true, image: true },
+    });
+  }
   return null;
 }
 
